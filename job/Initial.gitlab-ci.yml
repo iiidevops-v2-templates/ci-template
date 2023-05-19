@@ -1,0 +1,44 @@
+Integration--initial pipeline:
+  stage: initial
+  image:
+    name: iiiorg/iiidevops-cli:0.0.6
+  variables:
+    iiidevops: initial-pipeline
+    repo_name: ${CI_PROJECT_NAME}
+    branch_name: ${CI_COMMIT_BRANCH}
+    commit_id: ${CI_COMMIT_SHORT_SHA}
+    api_origin: ${IIIDEV_URL}
+  before_script:
+    - apk add --update curl
+  script:
+    - curl -s -L -X POST "${IIIDEV_URL}/project/issues_commit_by_name" -F "project_name=\"${CI_PROJECT_NAME}\""
+    - |
+      cat <<EOF >common.yaml
+      pipeline:
+        sequence: 0
+        timeout: 3600
+        ttlSecondsAfterFinished: null
+        backoffLimit: 3
+      api:
+        url: "${IIIDEV_URL}"
+        username: "${BOT_USERNAME}"
+        password: "${BOT_PASSWORD}"
+      git:
+        url: "${CI_PROJECT_URL}.git"
+        repoName: "${CI_PROJECT_NAME}"
+        branch: "${CI_COMMIT_BRANCH}"
+        commitID: "${CI_COMMIT_SHORT_SHA}"
+        token: "${GITLAB_TOKEN}"
+      harbor:
+        host: "${HARBOR_URL}"
+      timezone:
+        tz: Asia/Taipei
+      EOF
+    - count-src.pl
+  cache:
+    paths:
+      - common.yaml
+    policy: push
+  except:
+    variables:
+      - $CI_COMMIT_MESSAGE =~ /.*\(store\)$/

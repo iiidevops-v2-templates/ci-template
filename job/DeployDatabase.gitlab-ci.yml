@@ -1,0 +1,91 @@
+Deploy--Prepare database value:
+  image: alpine:3.17
+  stage: deploy
+  inherit:
+    default: false
+  script:
+    - echo "This job is for prepare database value, modify this job if you want to customize the database value."
+    - |
+      cat <<EOF >value.yaml
+      # Template From iiidevops-db-chart/values.yaml
+      db:
+        gui: true
+        type: "mysql"
+        username: "bear"
+        password: "bearbearbear"
+        name: "bearDB"
+        tag: "latest"
+      EOF
+  cache:
+    paths:
+      - common.yaml
+      - value.yaml
+
+Deploy--Database:
+  stage: deploy
+  variables:
+    iiidevops: deployed-environments
+    CHART_NAME: "${CI_PROJECT_NAME}-${CI_COMMIT_BRANCH}-db"
+    CHART_DB_GUI: "true"
+    CHART_DB_NAME: "todo_db"
+    CHART_DB_USERNAME: "iiidevops"
+    CHART_DB_PASSWORD: "DevOps_123"
+    CHART_DB_TAG: "13"
+    CHART_DB_TYPE: "postgresql"
+    CHART_NFS_ENABLED: "false"
+    CHART_NFS_SERVER_IP: "10.20.0.100"
+    CHART_NFS_PROJECT: "${CI_PROJECT_NAME}"
+    CHART_NFS_UUID: "6bc291ab-813b-4487-85d6-d3fa1d8838e5"
+    CHART_VERSION: "0.4.1"
+  needs:
+    - "Deploy--Prepare database value"
+  cache:
+    paths:
+      - common.yaml
+      - value.yaml
+    policy: pull
+  script:
+    - helm delete -n ${CI_PROJECT_NAME} ${CHART_NAME} || true
+    - helm install -n ${CI_PROJECT_NAME} ${CHART_NAME} -f common.yaml -f value.yaml
+      ${HARBOR_CHART_REGISTRY}/db
+      --set db.gui=${CHART_DB_GUI}
+      --set db.name=${CHART_DB_NAME}
+      --set db.password=${CHART_DB_PASSWORD}
+      --set db.tag=${CHART_DB_TAG}
+      --set db.type=${CHART_DB_TYPE}
+      --set db.username=${CHART_DB_USERNAME}
+      --set volumeMounts.nfs.enabled=${CHART_NFS_ENABLED}
+      --set volumeMounts.nfs.server=${CHART_NFS_SERVER_IP}
+      --set volumeMounts.project=${CHART_NFS_PROJECT}
+      --set volumeMounts.uuid=${CHART_NFS_UUID}
+      --version ${CHART_VERSION}
+  only:
+    - skip
+  except:
+    variables:
+      - $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
+
+Deploy--Wait DB deployment:
+  stage: deploy
+  image:
+    name: iiiorg/iiidevops-cli:0.0.6
+    entrypoint: [ "" ]
+  variables:
+    iiidevops: deployed-environments
+    max_wait: 128
+    namespace: ${CI_PROJECT_NAME}
+    deploy_name: ${CI_PROJECT_NAME}-${CI_COMMIT_BRANCH}-db
+  needs:
+    - "Deploy--Database"
+  script:
+    - >
+      kubectl create secret docker-registry harbor-local -n ${CI_PROJECT_NAME}
+      --docker-server=${HARBOR_URL}
+      --docker-username=${HARBOR_ROBOT}
+      --docker-password=${HARBOR_ROBOT_SECRET} || true
+    - deploy-wait.pl
+  only:
+    - skip
+  except:
+    variables:
+      - $CI_COMMIT_MESSAGE =~ /.*\(store\)$/

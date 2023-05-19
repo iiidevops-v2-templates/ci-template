@@ -1,0 +1,14 @@
+# Job start here
+default:
+  # Cache the helm chart common value
+  cache:
+    paths:
+      - common.yaml
+    policy: pull
+  image:
+    name: alpine/k8s:1.25.9
+    entrypoint: [ "" ]
+  interruptible: true
+  before_script:
+    - kubectl config get-contexts
+    - kubectl config use-context $(kubectl config get-contexts -o name)

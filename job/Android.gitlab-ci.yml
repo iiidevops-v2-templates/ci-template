@@ -1,0 +1,127 @@
+# Read more about this script on this blog post https://about.gitlab.com/2018/10/24/setting-up-gitlab-ci-for-android-projects/, by Jason Lenny
+# If you are interested in using Android with FastLane for publishing take a look at the Android-Fastlane template.
+
+# Original Source: https://gitlab.com/gitlab-org/gitlab-foss/-/blob/master/lib/gitlab/ci/templates/Android.gitlab-ci.yml
+
+.job-extend-android:
+  image: eclipse-temurin:17-jdk-jammy
+  interruptible: true
+
+  variables: 
+    iiidevops: cmas
+
+  # Packages installation before running script
+  before_script:
+    # If before-script.sh exists, source it to load custom environment variables etc.
+    - if [ -f "./before-script.sh" ]; then chmod +x ./before-script.sh && source ./before-script.sh; fi
+
+    - apt-get --quiet update --yes
+    - apt-get --quiet install --yes wget unzip
+
+    # Setup path as android_home for moving/exporting the downloaded sdk into it
+    - export ANDROID_HOME="${PWD}/android-sdk-root"
+    # Create a new directory at specified location
+    - install -d $ANDROID_HOME
+    # Here we are installing androidSDK tools from official source,
+    # (the key thing here is the url from where you are downloading these sdk tool for command line, so please do note this url pattern there and here as well)
+    # after that unzipping those tools and
+    # then running a series of SDK manager commands to install necessary android SDK packages that'll allow the app to build
+    - wget --no-verbose --output-document=$ANDROID_HOME/cmdline-tools.zip https://dl.google.com/android/repository/commandlinetools-linux-${ANDROID_SDK_TOOLS}_latest.zip
+    - unzip -q -d "$ANDROID_HOME/cmdline-tools" "$ANDROID_HOME/cmdline-tools.zip"
+    - mv -T "$ANDROID_HOME/cmdline-tools/cmdline-tools" "$ANDROID_HOME/cmdline-tools/tools"
+    - export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/cmdline-tools/tools/bin
+
+    # Nothing fancy here, just checking sdkManager version
+    - sdkmanager --version
+
+    # use yes to accept all licenses
+    - yes | sdkmanager --licenses > /dev/null || true
+    - sdkmanager "platforms;android-${ANDROID_COMPILE_SDK}"
+    - sdkmanager "platform-tools"
+    - sdkmanager "build-tools;${ANDROID_BUILD_TOOLS}"
+
+    # Not necessary, but just for surity
+    - chmod +x ./gradlew
+
+  after_script:
+    - if [ -f "./after-script.sh" ]; then chmod +x ./after-script.sh && ./after-script.sh; fi
+
+  only:
+    - skip
+
+  except:
+    variables:
+      - $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
+
+# Basic android and gradle stuff
+# Check linting
+Build--AndroidLintDebug:
+  extends: .job-extend-android
+  stage: build
+  script:
+    - ./gradlew -Pci --console=plain :app:lintDebug -PbuildDir=lint
+  artifacts:
+    paths:
+      - app/lint/reports/lint-results-debug.html
+    expose_as: "lint-report"
+    when: always
+
+# Make Project
+Build--AndroidDebugApp:
+  extends: .job-extend-android
+  stage: build
+  script:
+    - ./gradlew assembleDebug
+  artifacts:
+    paths:
+      - app/build/outputs/
+
+# Run all tests, if any fails, interrupt the pipeline(fail it)
+Test--AndroidTestDebug:
+  extends: .job-extend-android
+  needs: [ Build--AndroidLintDebug, Build--AndroidDebugApp ]
+  stage: test
+  script:
+    - ./gradlew -Pci --console=plain :app:testDebug
+
+#CMAS scan
+Test--CMAS APK scan:
+  stage: test
+  allow_failure: true
+  needs: [ Build--AndroidDebugApp ]
+  variables:
+    iiidevops: cmas
+    CHART_NAME: "${CI_PROJECT_NAME}-${CI_COMMIT_BRANCH}-cmas"
+    CHART_VERSION: "0.0.5"
+    CMAS_A_MODE: "24"
+    CMAS_A_ERT: "90"
+  cache:
+    paths:
+      - common.yaml
+    policy: pull
+  image:
+    name: alpine/k8s:1.25.9
+    entrypoint: [ "" ]
+  before_script:
+    - apk add --update curl
+    - >
+      TOKEN="$(curl -s -L -X POST ${IIIDEV_URL}/user/login -H "Content-Type: application/json"
+      -d '{"username": "'"${BOT_USERNAME}"'","password":"'"${BOT_PASSWORD}"'"}' | jq -r '.data.token')"
+    - curl -s -L -X POST ${IIIDEV_URL}/project/${CI_PROJECT_NAME}/pipeline_file
+      -H "Authorization:Bearer $TOKEN" -F commit_short_id=${CI_COMMIT_SHORT_SHA}
+      -F sequence=0 -F upload_file=@"./app/build/outputs/apk/debug/app-debug.apk"
+    - echo "Upload APK file done!"
+    - kubectl config get-contexts
+    - kubectl config use-context $(kubectl config get-contexts -o name)
+  script:
+    - helm delete -n ${CI_PROJECT_NAME} ${CHART_NAME} || exit_code=$?
+    - helm install -n ${CI_PROJECT_NAME} ${CHART_NAME} -f common.yaml
+      ${HARBOR_CHART_REGISTRY}/scan-cmas
+      --set cmas.a_mode=${CMAS_A_MODE}
+      --set cmas.a_ert=${CMAS_A_ERT}
+      --version ${CHART_VERSION}
+  only:
+    - skip
+  except:
+    variables:
+      - $CI_COMMIT_MESSAGE =~ /.*\(store\)$/

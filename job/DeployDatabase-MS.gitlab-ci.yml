@@ -1,0 +1,81 @@
+Deploy--Prepare database value:
+  image: alpine:3.17
+  stage: deploy
+  inherit:
+    default: false
+  script:
+    - echo "This job is for prepare database value, modify this job if you want to customize the database value."
+    - |
+      cat <<EOF >value.yaml
+      # Template From iiidevops-db-chart/values.yaml
+      db:
+        gui: true
+      EOF
+  cache:
+    paths:
+      - common.yaml
+      - value.yaml
+
+Deploy--Database (MS-SQL):
+  stage: deploy
+  variables:
+    iiidevops: deployed-environments
+    CHART_NAME: "${CI_PROJECT_NAME}-${CI_COMMIT_BRANCH}-db"
+    CHART_DB_GUI: "true"
+    CHART_DB_PASSWORD: "DevOps_123"
+    CHART_DB_TAG: "2019-CU10-ubuntu-20.04"
+    CHART_NFS_ENABLED: "false"
+    CHART_NFS_SERVER_IP: "10.20.0.100"
+    CHART_NFS_PROJECT: "${CI_PROJECT_NAME}"
+    CHART_NFS_UUID: "6bc291ab-813b-4487-85d6-d3fa1d8838e5"
+    CHART_VERSION: "0.2.0"
+  needs:
+    - "Deploy--Prepare database value"
+  cache:
+    paths:
+      - common.yaml
+      - value.yaml
+    policy: pull
+  script:
+    - helm delete -n ${CI_PROJECT_NAME} ${CHART_NAME} || true
+    - helm install -n ${CI_PROJECT_NAME} ${CHART_NAME} -f common.yaml -f value.yaml
+      ${HARBOR_CHART_REGISTRY}/mssql-server
+      --set db.gui=${CHART_DB_GUI}
+      --set db.name=${CHART_DB_NAME}
+      --set auth.saPassword=${CHART_DB_PASSWORD}
+      --set image.tag=${CHART_DB_TAG}
+      --set volumeMounts.nfs.enabled=${CHART_NFS_ENABLED}
+      --set volumeMounts.nfs.server=${CHART_NFS_SERVER_IP}
+      --set volumeMounts.project=${CHART_NFS_PROJECT}
+      --set volumeMounts.uuid=${CHART_NFS_UUID}
+      --version ${CHART_VERSION}
+  only:
+    - skip
+  except:
+    variables:
+      - $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
+
+Deploy--Wait DB deployment:
+  stage: deploy
+  image:
+    name: iiiorg/iiidevops-cli:0.0.4
+    entrypoint: [ "" ]
+  variables:
+    iiidevops: deployed-environments
+    max_wait: 128
+    namespace: ${CI_PROJECT_NAME}
+    deploy_name: ${CI_PROJECT_NAME}-${CI_COMMIT_BRANCH}-db
+  needs:
+    - "Deploy--Database (MS-SQL)"
+  script:
+    - >
+      kubectl create secret docker-registry harbor-local -n ${CI_PROJECT_NAME}
+      --docker-server=${HARBOR_URL}
+      --docker-username=${HARBOR_ROBOT}
+      --docker-password=${HARBOR_ROBOT_SECRET} || true
+    - deploy-wait.pl
+  only:
+    - skip
+  except:
+    variables:
+      - $CI_COMMIT_MESSAGE =~ /.*\(store\)$/

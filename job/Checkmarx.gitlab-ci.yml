@@ -1,0 +1,21 @@
+Test--Checkmarx source code scan:
+  stage: scan
+  allow_failure: true
+  variables:
+    iiidevops: checkmarx
+    CHART_NAME: "${CI_PROJECT_NAME}-${CI_COMMIT_BRANCH}-cmx"
+    CHART_VERSION: "2.0.0"
+  script:
+    - helm delete -n ${CI_PROJECT_NAME} ${CHART_NAME} || exit_code=$?
+    - helm install -n ${CI_PROJECT_NAME} ${CHART_NAME} -f common.yaml
+      ${HARBOR_CHART_REGISTRY}/scan-checkmarx
+      --set checkmarx.url=${CMX_URL}
+      --set checkmarx.client_secret=${CMX_SECRET}
+      --set checkmarx.username=${CMX_USERNAME}
+      --set checkmarx.password=${CMX_PASSWORD}
+      --version ${CHART_VERSION}
+  only:
+    - skip
+  except:
+    variables:
+      - $CI_COMMIT_MESSAGE =~ /.*\(store\)$/

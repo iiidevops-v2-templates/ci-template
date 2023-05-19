@@ -1,0 +1,31 @@
+Deploy--Set environment and wait deployment:
+  stage: deploy
+  image:
+    name: iiiorg/iiidevops-cli:0.0.4
+    entrypoint: [ "" ]
+  variables:
+    iiidevops: deployed-environments
+    max_wait: 128
+    namespace: ${CI_PROJECT_NAME}
+    deploy_name: ${CI_PROJECT_NAME}-${CI_COMMIT_BRANCH}-serv-dpy
+  script:
+    - kubectl delete configmap -n ${CI_PROJECT_NAME} ${CI_PROJECT_NAME}-${CI_COMMIT_BRANCH}-env --ignore-not-found=true
+    - chk-app-env.pl
+    - kubectl create configmap -n ${CI_PROJECT_NAME} ${CI_PROJECT_NAME}-${CI_COMMIT_BRANCH}-env --from-env-file=iiidevops/app.env
+    - >
+      kubectl annotate configmap -n ${CI_PROJECT_NAME} ${CI_PROJECT_NAME}-${CI_COMMIT_BRANCH}-env
+      iiidevops.org/project_name=${CICD_GIT_REPO_NAME}
+      iiidevops.org/branch=${CI_COMMIT_BRANCH}
+      iiidevops.org/commit_id=${CI_COMMIT_SHORT_SHA}
+      iiidevops.org/type=appenv
+    - >
+      kubectl create secret docker-registry harbor-local -n ${CI_PROJECT_NAME}
+      --docker-server=${HARBOR_URL}
+      --docker-username=${HARBOR_ROBOT}
+      --docker-password=${HARBOR_ROBOT_SECRET} || true
+    - deploy-wait.pl
+  only:
+    - skip
+  except:
+    variables:
+      - $CI_COMMIT_MESSAGE =~ /.*\(store\)$/

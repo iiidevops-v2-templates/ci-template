@@ -1,0 +1,127 @@
+stages:
+  - initial
+  - scan
+  - build
+  - deploy
+  - test
+
+include:
+  - local: 'job/DefaultJob.gitlab-ci.yml'
+  - local: 'job/Initial.gitlab-ci.yml'
+  - local: 'job/Sonarqube.gitlab-ci.yml'
+  - local: 'job/Checkmarx.gitlab-ci.yml'
+  - local: 'job/BuildImage.gitlab-ci.yml'
+  - local: 'job/DockerScan.gitlab-ci.yml'
+  - local: 'job/SetWebEnvironments.gitlab-ci.yml'
+  - local: 'job/DeployWeb.gitlab-ci.yml'
+  - local: 'job/TestAnchore.gitlab-ci.yml'
+  - local: 'job/TestPostman.gitlab-ci.yml'
+  - local: 'job/TestSideex.gitlab-ci.yml'
+  - local: 'job/TestWebInspect.gitlab-ci.yml'
+  - local: 'job/TestZap.gitlab-ci.yml'
+
+.common_except:
+  variables: &id001
+    - $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
+
+Test--SonarQube source code scan:
+  variables:
+    iiidevops: sonarqube
+    CHART_VERSION: "0.3.4"
+  only:
+    - master
+  except:
+    variables: *id001
+
+Test--Checkmarx source code scan:
+  variables:
+    iiidevops: checkmarx
+    CHART_NAME: "${CI_PROJECT_NAME}-${CI_COMMIT_BRANCH}-cmx"
+    CHART_VERSION: "0.3.4"
+  only:
+    - master
+  except:
+    variables: *id001
+
+Build image:
+  variables:
+    iiidevops: deployed-environments
+  only:
+    - master
+  except:
+    variables: *id001
+
+Build--Scan docker image:
+  variables:
+    iiidevops: deployed-environments
+  only:
+    - master
+  except:
+    variables: *id001
+
+Deploy--Set environment and wait deployment:
+  variables:
+    iiidevops: deployed-environments
+    max_wait: 128
+  only:
+    - master
+  except:
+    variables: *id001
+
+Deploy--Web:
+  variables:
+    iiidevops: deployed-environments
+    CHART_WEB_PORT: 80
+    CHART_VERSION: "0.5.16"
+  only:
+    - master
+  except:
+    variables: *id001
+
+Test--Anchore SBOM:
+  variables:
+    iiidevops: anchore
+    CHART_VERSION: "0.0.2"
+  only:
+    - master
+  except:
+    variables: *id001
+
+Test--ZAP:
+  variables:
+    iiidevops: zap
+    CHART_WEB_PORT: 80
+    CHART_VERSION: "0.2.5"
+  only:
+    - master
+  except:
+    variables: *id001
+
+Test--WebInspect:
+  variables:
+    iiidevops: webinspect
+    CHART_VERSION: "0.4.0"
+  only:
+    - master
+  except:
+    variables: *id001
+
+Test--Postman:
+  variables:
+    iiidevops: postman
+    CHART_WEB_PORT: 80
+    CHART_VERSION: "0.3.5"
+  only:
+    - master
+  except:
+    variables: *id001
+
+Test--Sideex:
+  variables:
+    iiidevops: sideex
+    CHART_WEB_PORT: 80
+    CHART_VERSION: "0.4.0"
+  only:
+    - master
+  except:
+    variables: *id001
