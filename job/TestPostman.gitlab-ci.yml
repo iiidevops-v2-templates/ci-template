@@ -10,11 +10,8 @@ Test--Postman:
     - helm delete -n ${CI_PROJECT_NAME} ${CHART_NAME} || exit_code=$?
     - helm install -n ${CI_PROJECT_NAME} ${CHART_NAME} -f common.yaml
       ${HARBOR_CHART_REGISTRY}/test-postman
-      --set harbor.host=harbor-dev3.iiidevops.org
-      --set image.repository=newman-runner/master
       --set web.deployName=${CI_PROJECT_NAME}-${CI_COMMIT_BRANCH}-serv
       --set web.port=${CHART_WEB_PORT}
-      --set newman.runnerVersion=707bbb1
       --version ${CHART_VERSION}
   only:
     - skip

@@ -68,7 +68,7 @@ Deploy--Database:
 Deploy--Wait DB deployment:
   stage: deploy
   image:
-    name: iiiorg/iiidevops-cli:0.0.6
+    name: iiiorg/iiidevops-cli:0.0.7
     entrypoint: [ "" ]
   variables:
     iiidevops: deployed-environments

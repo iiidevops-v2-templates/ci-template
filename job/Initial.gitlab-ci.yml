@@ -1,15 +1,13 @@
 Integration--initial pipeline:
   stage: initial
   image:
-    name: iiiorg/iiidevops-cli:0.0.6
+    name: iiiorg/iiidevops-cli:0.0.7
   variables:
     iiidevops: initial-pipeline
     repo_name: ${CI_PROJECT_NAME}
     branch_name: ${CI_COMMIT_BRANCH}
     commit_id: ${CI_COMMIT_SHORT_SHA}
     api_origin: ${IIIDEV_URL}
-  before_script:
-    - apk add --update curl
   script:
     - curl -s -L -X POST "${IIIDEV_URL}/project/issues_commit_by_name" -F "project_name=\"${CI_PROJECT_NAME}\""
     - |
