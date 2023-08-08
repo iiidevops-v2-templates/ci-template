@@ -1,127 +1,36 @@
 stages:
-  - initial
-  - scan
-  - build
-  - deploy
-  - test
+- publish
 
-include:
-  - local: 'job/DefaultJob.gitlab-ci.yml'
-  - local: 'job/Initial.gitlab-ci.yml'
-  - local: 'job/Sonarqube.gitlab-ci.yml'
-  - local: 'job/Checkmarx.gitlab-ci.yml'
-  - local: 'job/BuildImage.gitlab-ci.yml'
-  - local: 'job/DockerScan.gitlab-ci.yml'
-  - local: 'job/SetWebEnvironments.gitlab-ci.yml'
-  - local: 'job/DeployWeb.gitlab-ci.yml'
-  - local: 'job/TestAnchore.gitlab-ci.yml'
-  - local: 'job/TestPostman.gitlab-ci.yml'
-  - local: 'job/TestSideex.gitlab-ci.yml'
-  - local: 'job/TestWebInspect.gitlab-ci.yml'
-  - local: 'job/TestZap.gitlab-ci.yml'
-
-.common_except:
-  variables: &id001
-    - $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
-
-Test--SonarQube source code scan:
+squash-commits:
+  stage: publish
+  image: alpine/git
   variables:
-    iiidevops: sonarqube
-    CHART_VERSION: "0.3.4"
-  only:
-    - master
-  except:
-    variables: *id001
+    GIT_DEPTH: 0
+    GIT_STRATEGY: clone
+  before_script:
+    - git config --global user.email "gitlab-ci@dev7.iiidevops.org"
+    - git config --global user.name "GitLab CI"
+  script:
+    - set -euo pipefail
 
-Test--Checkmarx source code scan:
-  variables:
-    iiidevops: checkmarx
-    CHART_NAME: "${CI_PROJECT_NAME}-${CI_COMMIT_BRANCH}-cmx"
-    CHART_VERSION: "0.3.4"
-  only:
-    - master
-  except:
-    variables: *id001
+    - git branch $STAGE_BRANCH || echo "staging branch already exists"
+    - git checkout $STAGE_BRANCH
 
-Build image:
-  variables:
-    iiidevops: deployed-environments
-  only:
-    - master
-  except:
-    variables: *id001
+    - PREVIOUS_TAG=$(git describe --tags --abbrev=0 || git rev-list --max-parents=0 HEAD)
+    - SECOND_TAG=$(git describe --tags --abbrev=0 "${PREVIOUS_TAG}"^ || git rev-list --max-parents=0 HEAD)
 
-Build--Scan docker image:
-  variables:
-    iiidevops: deployed-environments
-  only:
-    - master
-  except:
-    variables: *id001
+    - git reset --soft "${SECOND_TAG}"
 
-Deploy--Set environment and wait deployment:
-  variables:
-    iiidevops: deployed-environments
-    max_wait: 128
-  only:
-    - master
-  except:
-    variables: *id001
+    - |
+      git add -A
+      git commit -m "chore: squash commits between ${SECOND_TAG} and ${PREVIOUS_TAG}"
+      git tag -a "${PREVIOUS_TAG}" -m "chore: release ${PREVIOUS_TAG}" --force
+      git checkout $DEVELOP_BRANCH
+      git merge -X theirs $STAGE_BRANCH --no-edit
 
-Deploy--Web:
-  variables:
-    iiidevops: deployed-environments
-    CHART_WEB_PORT: 80
-    CHART_VERSION: "0.5.16"
-  only:
-    - master
-  except:
-    variables: *id001
+    - |
+      git push "https://gitlab-ci-token:$CI_JOB_TOKEN@$CI_SERVER_HOST/$CI_PROJECT_PATH.git" $STAGE_BRANCH --force --tags
+      git push "https://gitlab-ci-token:$CI_JOB_TOKEN@$CI_SERVER_HOST/$CI_PROJECT_PATH.git" $DEVELOP_BRANCH
+  rules:
+    - if: $CI_COMMIT_TAG && $GITLAB_USER_NAME != "Shared Token For Bot"
 
-Test--Anchore SBOM:
-  variables:
-    iiidevops: anchore
-    CHART_VERSION: "0.0.2"
-  only:
-    - master
-  except:
-    variables: *id001
-
-Test--ZAP:
-  variables:
-    iiidevops: zap
-    CHART_WEB_PORT: 80
-    CHART_VERSION: "0.2.5"
-  only:
-    - master
-  except:
-    variables: *id001
-
-Test--WebInspect:
-  variables:
-    iiidevops: webinspect
-    CHART_VERSION: "0.4.0"
-  only:
-    - master
-  except:
-    variables: *id001
-
-Test--Postman:
-  variables:
-    iiidevops: postman
-    CHART_WEB_PORT: 80
-    CHART_VERSION: "0.3.5"
-  only:
-    - master
-  except:
-    variables: *id001
-
-Test--Sideex:
-  variables:
-    iiidevops: sideex
-    CHART_WEB_PORT: 80
-    CHART_VERSION: "0.4.0"
-  only:
-    - master
-  except:
-    variables: *id001
