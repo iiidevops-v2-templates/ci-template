@@ -9,7 +9,13 @@ Integration--initial pipeline:
     commit_id: ${CI_COMMIT_SHORT_SHA}
     api_origin: ${IIIDEV_URL}
   script:
+    - 'RAWDATA="{}" RAWDATA=$(echo "${RAWDATA}" | jq --arg username "${BOT_USERNAME}" --arg password "${BOT_PASSWORD}" ''. + {username: $username, password: $password}'') '
+    - RESPONSE="$(curl -sL --fail -X POST ${IIIDEV_URL}/user/login -H "Content-Type:application/json" -d "${RAWDATA}")"
+    - TOKEN="$(echo "${RESPONSE}" | jq -r '.data.token')"
     - curl -s -L -X POST "${IIIDEV_URL}/project/issues_commit_by_name" -F "project_name=\"${CI_PROJECT_NAME}\""
+    - curl -s -L -X POST "${IIIDEV_URL}/project/commit_test_summary" -H "Authorization:Bearer
+      $TOKEN" -F "pipeline_id=\"${CI_PIPELINE_ID}\"" -F "project_name=\"${CI_PROJECT_NAME}\""
+      -F "branch=\"${CI_COMMIT_BRANCH}\"" -F "commit_id=\"${CI_COMMIT_SHORT_SHA}\""
     - |
       cat <<EOF >common.yaml
       pipeline:
