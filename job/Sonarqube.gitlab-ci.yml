@@ -5,8 +5,13 @@ Test--SonarQube source code scan:
     iiidevops: sonarqube
     CHART_TYPE: normal
     CHART_NAME: "${CI_PROJECT_NAME}-${CI_COMMIT_BRANCH}-sq"
+    CHART_NORMAL_IMAGE: "dockerhub/sonarsource/sonar-scanner-cli"
+    CHART_NORMAL_TAG: "4.6"
+    CHART_GRADLE_IMAGE: "dockerhub/library/gradle"
     CHART_GRADLE_TAG: "jdk11"
+    CHART_MAVEN_IMAGE: "dockerhub/library/maven"
     CHART_MAVEN_TAG: "3.6.3-openjdk-11"
+    CHART_ASP_IMAGE: "mcr.microsoft.com/dotnet/sdk"
     CHART_ASP_TAG: "6.0"
     CHART_VERSION: "2.1.2"
   script:
@@ -16,8 +21,13 @@ Test--SonarQube source code scan:
       --set sonarqube.url=${SONAR_URL}
       --set sonarqube.token=${SONAR_TOKEN}
       --set type=${CHART_TYPE}
+      --set image.repository=${CHART_NORMAL_IMAGE}
+      --set sonarqube.runnerVersion=${CHART_NORMAL_TAG}
+      --set gradle.image=${CHART_GRADLE_IMAGE}
       --set gradle.tag=${CHART_GRADLE_TAG}
+      --set maven.image=${CHART_MAVEN_IMAGE}
       --set maven.tag=${CHART_MAVEN_TAG}
+      --set asp_dot_net.image=${CHART_ASP_IMAGE}
       --set asp_dot_net.tag=${CHART_ASP_TAG}
       --version ${CHART_VERSION}
   only:
