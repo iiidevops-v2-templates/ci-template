@@ -5,6 +5,9 @@ Test--SonarQube source code scan:
     iiidevops: sonarqube
     CHART_TYPE: normal
     CHART_NAME: "${CI_PROJECT_NAME}-${CI_COMMIT_BRANCH}-sq"
+    CHART_GRADLE_TAG: "jdk11"
+    CHART_MAVEN_TAG: "3.6.3-openjdk-11"
+    CHART_ASP_TAG: "6.0"
     CHART_VERSION: "2.1.2"
   script:
     - helm delete -n ${CI_PROJECT_NAME} ${CHART_NAME} || exit_code=$?
@@ -13,6 +16,9 @@ Test--SonarQube source code scan:
       --set sonarqube.url=${SONAR_URL}
       --set sonarqube.token=${SONAR_TOKEN}
       --set type=${CHART_TYPE}
+      --set gradle.tag=${CHART_GRADLE_TAG}
+      --set maven.tag=${CHART_MAVEN_TAG}
+      --set asp_dot_net.tag=${CHART_ASP_TAG}
       --version ${CHART_VERSION}
   only:
     - skip
