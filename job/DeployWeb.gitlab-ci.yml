@@ -9,7 +9,8 @@ Deploy--Web:
     CHART_DB_USERNAME: "db_username"
     CHART_DB_PASSWORD: "db_passwd"
     CHART_DB_SERVER: "${CI_PROJECT_NAME}-${CI_COMMIT_BRANCH}-db"
-    CHART_VERSION: "0.5.16"
+    CHART_VOLUME_ENABLED: "false"
+    CHART_VERSION: "1.0.0"
   script:
     - helm delete -n ${CI_PROJECT_NAME} ${CHART_NAME} || exit_code=$?
     - helm install -n ${CI_PROJECT_NAME} ${CHART_NAME} -f common.yaml
@@ -23,6 +24,7 @@ Deploy--Web:
       --set db.releaseName=${CHART_DB_SERVER}
       --set kube.ingress.base_domain=${IIIDEV_ING}
       --set kube.ingress.proxy_body_size=${CHART_PROXY_BODY_SIZE}
+      --set persistence.enabled=${CHART_VOLUME_ENABLED}
       --version ${CHART_VERSION}
   only:
     - skip
