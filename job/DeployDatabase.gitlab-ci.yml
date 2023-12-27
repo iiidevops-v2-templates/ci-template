@@ -32,11 +32,8 @@ Deploy--Database:
     CHART_DB_PASSWORD: "DevOps_123"
     CHART_DB_TAG: "13"
     CHART_DB_TYPE: "postgresql"
-    CHART_NFS_ENABLED: "false"
-    CHART_NFS_SERVER_IP: "10.20.0.100"
-    CHART_NFS_PROJECT: "${CI_PROJECT_NAME}"
-    CHART_NFS_UUID: "6bc291ab-813b-4487-85d6-d3fa1d8838e5"
-    CHART_VERSION: "0.4.1"
+    CHART_VOLUME_ENABLED: "false"
+    CHART_VERSION: "1.0.0"
   needs:
     - "Deploy--Prepare database value"
   cache:
@@ -54,10 +51,7 @@ Deploy--Database:
       --set db.tag=${CHART_DB_TAG}
       --set db.type=${CHART_DB_TYPE}
       --set db.username=${CHART_DB_USERNAME}
-      --set volumeMounts.nfs.enabled=${CHART_NFS_ENABLED}
-      --set volumeMounts.nfs.server=${CHART_NFS_SERVER_IP}
-      --set volumeMounts.project=${CHART_NFS_PROJECT}
-      --set volumeMounts.uuid=${CHART_NFS_UUID}
+      --set persistence.enabled=${CHART_VOLUME_ENABLED}
       --version ${CHART_VERSION}
   only:
     - skip
