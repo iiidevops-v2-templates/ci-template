@@ -10,6 +10,7 @@ Deploy--Web:
     CHART_DB_PASSWORD: "db_passwd"
     CHART_DB_SERVER: "${CI_PROJECT_NAME}-${CI_COMMIT_BRANCH}-db"
     CHART_VOLUME_ENABLED: "false"
+    CHART_VOLUME_PATH: "/usr/src"
     CHART_VERSION: "1.0.0"
   script:
     - helm delete -n ${CI_PROJECT_NAME} ${CHART_NAME} || exit_code=$?
@@ -25,6 +26,7 @@ Deploy--Web:
       --set kube.ingress.base_domain=${IIIDEV_ING}
       --set kube.ingress.proxy_body_size=${CHART_PROXY_BODY_SIZE}
       --set persistence.enabled=${CHART_VOLUME_ENABLED}
+      --set persistence.mountPath=${CHART_VOLUME_PATH}
       --version ${CHART_VERSION}
   only:
     - skip
