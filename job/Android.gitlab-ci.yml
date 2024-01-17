@@ -92,7 +92,7 @@ Test--CMAS APK scan:
   variables:
     iiidevops: cmas
     CHART_NAME: "${CI_PROJECT_NAME}-${CI_COMMIT_BRANCH}-cmas"
-    CHART_VERSION: "0.0.5"
+    CHART_VERSION: "0.0.6"
     CMAS_A_MODE: "24"
     CMAS_A_ERT: "90"
   cache:
