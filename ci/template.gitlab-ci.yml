@@ -4,6 +4,7 @@ include:
   - local: 'job/Initial.gitlab-ci.yml'
   - local: 'job/Sonarqube.gitlab-ci.yml'
   - local: 'job/Checkmarx.gitlab-ci.yml'
+  - local: 'job/AnchoreForder.gitlab-ci.yml'
   - local: 'job/BuildImage.gitlab-ci.yml'
   - local: 'job/DockerScan.gitlab-ci.yml'
   - local: 'job/SetWebEnvironments.gitlab-ci.yml'
