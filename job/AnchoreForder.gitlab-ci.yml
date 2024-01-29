@@ -2,7 +2,7 @@ Test--Anchore SBOM Code:
   stage: scan
   allow_failure: true
   variables:
-    iiidevops: anchore
+    iiidevops: anchore-code
     CHART_NAME: "${CI_PROJECT_NAME}-${CI_COMMIT_BRANCH}-sbom-code"
     CHART_VERSION: "0.1.7"
   script:
