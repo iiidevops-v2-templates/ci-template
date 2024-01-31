@@ -1,4 +1,4 @@
-Test--Anchore SBOM Code:
+Test--Anchore SBOM source code scan:
   stage: scan
   allow_failure: true
   variables:

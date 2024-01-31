@@ -1,10 +1,5 @@
 # Job start here
 default:
-  # Cache the helm chart common value
-  cache:
-    paths:
-      - common.yaml
-    policy: pull
   image:
     name: alpine/k8s:1.25.9
     entrypoint: [ "" ]
@@ -12,3 +7,25 @@ default:
   before_script:
     - kubectl config get-contexts
     - kubectl config use-context $(kubectl config get-contexts -o name)
+    - |
+      cat <<EOF >common.yaml
+      pipeline:
+        sequence: 0
+        timeout: 3600
+        ttlSecondsAfterFinished: null
+        backoffLimit: 3
+      api:
+        url: "${IIIDEV_URL}"
+        username: "${BOT_USERNAME}"
+        password: "${BOT_PASSWORD}"
+      git:
+        url: "${CI_PROJECT_URL}.git"
+        repoName: "${CI_PROJECT_NAME}"
+        branch: "${CI_COMMIT_BRANCH}"
+        commitID: "${CI_COMMIT_SHORT_SHA}"
+        token: "${GITLAB_TOKEN}"
+      harbor:
+        host: "${HARBOR_URL}"
+      timezone:
+        tz: Asia/Taipei
+      EOF
