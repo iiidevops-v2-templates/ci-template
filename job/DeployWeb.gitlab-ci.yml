@@ -10,8 +10,8 @@ Deploy--Web:
     CHART_DB_PASSWORD: "db_passwd"
     CHART_DB_SERVER: "${CI_PROJECT_NAME}-${CI_COMMIT_BRANCH}-db"
     CHART_VOLUME_ENABLED: "false"
-    CHART_VOLUME_PATH: "/usr/src"
-    CHART_VERSION: "1.0.0"
+    CHART_VOLUME_PATH: "/mnt/data"
+    CHART_VERSION: "1.0.1"
   script:
     - helm delete -n ${CI_PROJECT_NAME} ${CHART_NAME} || exit_code=$?
     - helm install -n ${CI_PROJECT_NAME} ${CHART_NAME} -f common.yaml
