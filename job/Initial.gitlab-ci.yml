@@ -16,33 +16,7 @@ Integration--initial pipeline:
     - curl -s -L -X POST "${IIIDEV_URL}/project/commit_test_summary" -H "Authorization:Bearer
       $TOKEN" -F "pipeline_id=\"${CI_PIPELINE_ID}\"" -F "project_name=\"${CI_PROJECT_NAME}\""
       -F "branch=\"${CI_COMMIT_BRANCH}\"" -F "commit_id=\"${CI_COMMIT_SHORT_SHA}\""
-    - |
-      cat <<EOF >common.yaml
-      pipeline:
-        sequence: 0
-        timeout: 3600
-        ttlSecondsAfterFinished: null
-        backoffLimit: 3
-      api:
-        url: "${IIIDEV_URL}"
-        username: "${BOT_USERNAME}"
-        password: "${BOT_PASSWORD}"
-      git:
-        url: "${CI_PROJECT_URL}.git"
-        repoName: "${CI_PROJECT_NAME}"
-        branch: "${CI_COMMIT_BRANCH}"
-        commitID: "${CI_COMMIT_SHORT_SHA}"
-        token: "${GITLAB_TOKEN}"
-      harbor:
-        host: "${HARBOR_URL}"
-      timezone:
-        tz: Asia/Taipei
-      EOF
     - count-src.pl
-  cache:
-    paths:
-      - common.yaml
-    policy: push
   except:
     variables:
       - $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
