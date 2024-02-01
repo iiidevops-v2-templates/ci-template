@@ -7,7 +7,7 @@ Test--Sideex:
     CHART_NAME: "${CI_PROJECT_NAME}-${CI_COMMIT_BRANCH}-sdx"
     CHART_VERSION: "0.4.2"
   script:
-    - helm uninstall -n ${CI_PROJECT_NAME} ${CHART_NAME} --no-hooks || exit_code=$?
+    - helm uninstall -n ${CI_PROJECT_NAME} ${CHART_NAME} --cascade orphan || exit_code=$?
     - helm install -n ${CI_PROJECT_NAME} ${CHART_NAME} -f common.yaml
       ${HARBOR_CHART_REGISTRY}/test-sideex
       --set web.deployName=${CI_PROJECT_NAME}-${CI_COMMIT_BRANCH}-serv

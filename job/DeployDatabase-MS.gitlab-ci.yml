@@ -32,7 +32,7 @@ Deploy--Database (MS-SQL):
       - value.yaml
     policy: pull
   script:
-    - helm uninstall -n ${CI_PROJECT_NAME} ${CHART_NAME} --no-hooks || exit_code=$?
+    - helm uninstall -n ${CI_PROJECT_NAME} ${CHART_NAME} --cascade orphan || exit_code=$?
     - helm install -n ${CI_PROJECT_NAME} ${CHART_NAME} -f common.yaml -f value.yaml
       ${HARBOR_CHART_REGISTRY}/mssql-server
       --set db.gui=${CHART_DB_GUI}
