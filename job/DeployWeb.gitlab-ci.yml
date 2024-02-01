@@ -13,7 +13,7 @@ Deploy--Web:
     CHART_VOLUME_PATH: "/mnt/data"
     CHART_VERSION: "1.0.1"
   script:
-    - helm uninstall -n ${CI_PROJECT_NAME} ${CHART_NAME} --no-hooks || exit_code=$?
+    - helm uninstall -n ${CI_PROJECT_NAME} ${CHART_NAME} --cascade orphan || exit_code=$?
     - helm install -n ${CI_PROJECT_NAME} ${CHART_NAME} -f common.yaml
       ${HARBOR_CHART_REGISTRY}/web
       --set imagePullSecrets[0].name=harbor-local

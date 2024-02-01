@@ -15,7 +15,7 @@ Test--SonarQube source code scan:
     CHART_ASP_TAG: "6.0"
     CHART_VERSION: "2.1.3"
   script:
-    - helm uninstall -n ${CI_PROJECT_NAME} ${CHART_NAME} --no-hooks || exit_code=$?
+    - helm uninstall -n ${CI_PROJECT_NAME} ${CHART_NAME} --cascade orphan || exit_code=$?
     - helm install -n ${CI_PROJECT_NAME} ${CHART_NAME} -f common.yaml
       ${HARBOR_CHART_REGISTRY}/scan-sonarqube
       --set sonarqube.url=${SONAR_URL}

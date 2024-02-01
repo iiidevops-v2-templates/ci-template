@@ -6,7 +6,7 @@ Test--Anchore SBOM source code scan:
     CHART_NAME: "${CI_PROJECT_NAME}-${CI_COMMIT_BRANCH}-sbom-code"
     CHART_VERSION: "0.1.7"
   script:
-    - helm uninstall -n ${CI_PROJECT_NAME} ${CHART_NAME} --no-hooks || exit_code=$?
+    - helm uninstall -n ${CI_PROJECT_NAME} ${CHART_NAME} --cascade orphan || exit_code=$?
     - helm install -n ${CI_PROJECT_NAME} ${CHART_NAME} -f common.yaml
       ${HARBOR_CHART_REGISTRY}/scan-anchore
       --set anchore.image=${CI_PROJECT_NAME}/${CI_COMMIT_BRANCH}:${CI_COMMIT_SHORT_SHA}
