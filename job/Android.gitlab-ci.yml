@@ -95,9 +95,6 @@ Test--CMAS APK scan:
     CHART_VERSION: "0.0.6"
     CMAS_A_MODE: "24"
     CMAS_A_ERT: "90"
-  cache:
-    paths:
-      - common.yaml
     policy: pull
   image:
     name: alpine/k8s:1.25.9
@@ -113,8 +110,30 @@ Test--CMAS APK scan:
     - echo "Upload APK file done!"
     - kubectl config get-contexts
     - kubectl config use-context $(kubectl config get-contexts -o name)
+    - |
+      cat <<EOF >common.yaml
+      pipeline:
+        sequence: 0
+        timeout: 3600
+        ttlSecondsAfterFinished: null
+        backoffLimit: 3
+      api:
+        url: "${IIIDEV_URL}"
+        username: "${BOT_USERNAME}"
+        password: "${BOT_PASSWORD}"
+      git:
+        url: "${CI_PROJECT_URL}.git"
+        repoName: "${CI_PROJECT_NAME}"
+        branch: "${CI_COMMIT_BRANCH}"
+        commitID: "${CI_COMMIT_SHORT_SHA}"
+        token: "${GITLAB_TOKEN}"
+      harbor:
+        host: "${HARBOR_URL}"
+      timezone:
+        tz: Asia/Taipei
+      EOF
   script:
-    - helm delete -n ${CI_PROJECT_NAME} ${CHART_NAME} || exit_code=$?
+    - helm uninstall -n ${CI_PROJECT_NAME} ${CHART_NAME} --no-hooks || exit_code=$?
     - helm install -n ${CI_PROJECT_NAME} ${CHART_NAME} -f common.yaml
       ${HARBOR_CHART_REGISTRY}/scan-cmas
       --set cmas.a_mode=${CMAS_A_MODE}
