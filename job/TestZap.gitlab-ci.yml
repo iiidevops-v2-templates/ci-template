@@ -7,7 +7,7 @@ Test--ZAP:
     CHART_NAME: "${CI_PROJECT_NAME}-${CI_COMMIT_BRANCH}-zap"
     CHART_VERSION: "0.2.6"
   script:
-    - helm delete -n ${CI_PROJECT_NAME} ${CHART_NAME} || exit_code=$?
+    - helm uninstall -n ${CI_PROJECT_NAME} ${CHART_NAME} --no-hooks || exit_code=$?
     - helm install -n ${CI_PROJECT_NAME} ${CHART_NAME} -f common.yaml
       ${HARBOR_CHART_REGISTRY}/test-zap
       --set web.deployName=${CI_PROJECT_NAME}-${CI_COMMIT_BRANCH}-serv

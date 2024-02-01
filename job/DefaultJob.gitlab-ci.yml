@@ -1,7 +1,7 @@
 # Job start here
 default:
   image:
-    name: alpine/k8s:1.25.9
+    name: alpine/k8s:1.25.16
     entrypoint: [ "" ]
   interruptible: true
   before_script:

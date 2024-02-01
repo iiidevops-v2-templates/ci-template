@@ -13,7 +13,6 @@ Deploy--Prepare database value:
       EOF
   cache:
     paths:
-      - common.yaml
       - value.yaml
 
 Deploy--Database (MS-SQL):
@@ -24,30 +23,22 @@ Deploy--Database (MS-SQL):
     CHART_DB_GUI: "true"
     CHART_DB_PASSWORD: "DevOps_123"
     CHART_DB_TAG: "2019-CU10-ubuntu-20.04"
-    CHART_NFS_ENABLED: "false"
-    CHART_NFS_SERVER_IP: "10.20.0.100"
-    CHART_NFS_PROJECT: "${CI_PROJECT_NAME}"
-    CHART_NFS_UUID: "6bc291ab-813b-4487-85d6-d3fa1d8838e5"
-    CHART_VERSION: "0.2.0"
+    CHART_VOLUME_ENABLED: 'false'
+    CHART_VERSION: "0.2.1"
   needs:
     - "Deploy--Prepare database value"
   cache:
     paths:
-      - common.yaml
       - value.yaml
     policy: pull
   script:
-    - helm delete -n ${CI_PROJECT_NAME} ${CHART_NAME} || true
+    - helm uninstall -n ${CI_PROJECT_NAME} ${CHART_NAME} --no-hooks || exit_code=$?
     - helm install -n ${CI_PROJECT_NAME} ${CHART_NAME} -f common.yaml -f value.yaml
       ${HARBOR_CHART_REGISTRY}/mssql-server
       --set db.gui=${CHART_DB_GUI}
       --set db.name=${CHART_DB_NAME}
       --set auth.saPassword=${CHART_DB_PASSWORD}
       --set image.tag=${CHART_DB_TAG}
-      --set volumeMounts.nfs.enabled=${CHART_NFS_ENABLED}
-      --set volumeMounts.nfs.server=${CHART_NFS_SERVER_IP}
-      --set volumeMounts.project=${CHART_NFS_PROJECT}
-      --set volumeMounts.uuid=${CHART_NFS_UUID}
       --version ${CHART_VERSION}
   only:
     - skip

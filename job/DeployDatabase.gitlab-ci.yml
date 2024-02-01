@@ -18,7 +18,6 @@ Deploy--Prepare database value:
       EOF
   cache:
     paths:
-      - common.yaml
       - value.yaml
 
 Deploy--Database:
@@ -38,11 +37,10 @@ Deploy--Database:
     - "Deploy--Prepare database value"
   cache:
     paths:
-      - common.yaml
       - value.yaml
     policy: pull
   script:
-    - helm delete -n ${CI_PROJECT_NAME} ${CHART_NAME} || true
+    - helm uninstall -n ${CI_PROJECT_NAME} ${CHART_NAME} --no-hooks || exit_code=$?
     - helm install -n ${CI_PROJECT_NAME} ${CHART_NAME} -f common.yaml -f value.yaml
       ${HARBOR_CHART_REGISTRY}/db
       --set db.gui=${CHART_DB_GUI}
