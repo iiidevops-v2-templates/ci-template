@@ -14,6 +14,9 @@ Deploy--Prepare database value:
   cache:
     paths:
       - value.yaml
+  except:
+    variables:
+      - $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
 
 Deploy--Database (MS-SQL):
   stage: deploy
