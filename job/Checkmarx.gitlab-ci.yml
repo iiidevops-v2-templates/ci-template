@@ -4,16 +4,13 @@ Test--Checkmarx source code scan:
   variables:
     iiidevops: checkmarx
     CHART_NAME: "${CI_PROJECT_NAME}-${CI_COMMIT_BRANCH}-cmx"
-    CHART_VERSION: "2.0.1"
+    CHART_VERSION: 2.1.0
   script:
-    - helm uninstall -n ${CI_PROJECT_NAME} ${CHART_NAME} --cascade orphan || exit_code=$?
-    - helm install -n ${CI_PROJECT_NAME} ${CHART_NAME} -f common.yaml
-      ${HARBOR_CHART_REGISTRY}/scan-checkmarx
-      --set checkmarx.url=${CMX_URL}
-      --set checkmarx.client_secret=${CMX_SECRET}
-      --set checkmarx.username=${CMX_USERNAME}
-      --set checkmarx.password=${CMX_PASSWORD}
-      --version ${CHART_VERSION}
+    - 'curl -s -L -X POST ${IIIDEV_URL}/checkmarx/queue -H "Content-Type:
+      application/json" -H "Authorization: Bearer $TOKEN" -d ''{ "project_name": "''"${CI_PROJECT_NAME}"''",
+      "branch": "''"${CI_COMMIT_BRANCH}"''","commit":"''"${CI_COMMIT_SHORT_SHA}"''", "sequence":"''"${CI_PIPELINE_ID}"''",
+      "chart_version":"''"${CHART_VERSION}"''", "chart_name":"''"scan-checkmarx"''"
+      }'''
   only:
     - skip
   except:

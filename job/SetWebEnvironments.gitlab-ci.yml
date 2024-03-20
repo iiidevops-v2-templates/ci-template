@@ -23,7 +23,20 @@ Deploy--Set environment and wait deployment:
       --docker-server=${HARBOR_URL}
       --docker-username=${HARBOR_ROBOT}
       --docker-password=${HARBOR_ROBOT_SECRET} || true
-    - deploy-wait.pl
+    - deploy-wait.pl 
+    - 'curl -s -L -X POST ${IIIDEV_URL}/project/${CI_PROJECT_NAME}/pipeline 
+      -H "Content-Type: application/json" 
+      -H "Authorization: Bearer $TOKEN" 
+      -d ''{
+        "branch": "''"${CI_COMMIT_BRANCH}"''",
+        "commit_id":"''"${CI_COMMIT_SHORT_SHA}"''",
+        "pipeline_id":"''"${CI_PIPELINE_ID}"''",
+        "job_id":"''"${CI_JOB_ID}"''",
+        "job_type":"''"env"''",
+        "run_web_success":"''"true"''"
+      }'''
+
+
   only:
     - skip
   except:

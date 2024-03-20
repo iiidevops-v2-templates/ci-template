@@ -5,8 +5,18 @@ default:
     entrypoint: [ "" ]
   interruptible: true
   before_script:
+  before_script:
+    - apk add --update curl
+    - 'TOKEN="$(curl -s -L -X POST ${IIIDEV_URL}/user/login -H "Content-Type: application/json"
+      -d ''{"username": "''"${BOT_USERNAME}"''","password":"''"${BOT_PASSWORD}"''"}''
+      | jq -r ''.data.token'')"'
+    - 'SA_TOKEN="$(curl -s -L -X POST ${IIIDEV_URL}/v2/user/k8s_token -H "Content-Type:
+      application/json" -H "Authorization: Bearer $TOKEN" | jq -r ''.data.token'')"'
+    - kubectl config set-cluster runner-cluster --server=https://kubernetes.default.svc.cluster.local --insecure-skip-tls-verify=true
+    - kubectl config set-credentials runner-bot --token=${SA_TOKEN}
+    - kubectl config set-context runner --cluster=runner-cluster --user=runner-bot
     - kubectl config get-contexts
-    - kubectl config use-context $(kubectl config get-contexts -o name)
+    - kubectl config use-context runner
     - |
       cat <<EOF >common.yaml
       pipeline:
