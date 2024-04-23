@@ -5,7 +5,6 @@ default:
     entrypoint: [ "" ]
   interruptible: true
   before_script:
-  before_script:
     - apk add --update curl
     - 'TOKEN="$(curl -s -L -X POST ${IIIDEV_URL}/user/login -H "Content-Type: application/json"
       -d ''{"username": "''"${BOT_USERNAME}"''","password":"''"${BOT_PASSWORD}"''"}''

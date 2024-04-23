@@ -14,8 +14,8 @@ Test--Sideex:
       --set web.port=${CHART_WEB_PORT}
       --set sideex.repoPath=${CI_PROJECT_DIR}
       --version ${CHART_VERSION}
-  only:
-    - skip
-  except:
-    variables:
-      - $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
+  rules:
+    - if: $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
+      when: never
+    - if: '$CI_COMMIT_BRANCH =~ $III_SIDEEX'
+      when: always

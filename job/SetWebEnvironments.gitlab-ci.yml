@@ -4,7 +4,7 @@ Deploy--Set environment and wait deployment:
     name: iiiorg/iiidevops-cli:0.0.7
     entrypoint: [ "" ]
   variables:
-    iiidevops: deployed-environments
+    iiidevops: deploy
     max_wait: 128
     namespace: ${CI_PROJECT_NAME}
     deploy_name: ${CI_PROJECT_NAME}-${CI_COMMIT_BRANCH}-serv-dpy
@@ -35,10 +35,8 @@ Deploy--Set environment and wait deployment:
         "job_type":"''"env"''",
         "run_web_success":"''"true"''"
       }'''
-
-
-  only:
-    - skip
-  except:
-    variables:
-      - $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
+  rules:
+    - if: $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
+      when: never
+    - if: '$CI_COMMIT_BRANCH =~ $III_DEPLOY'
+      when: always

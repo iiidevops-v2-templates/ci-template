@@ -13,8 +13,8 @@ Test--Postman:
       --set web.deployName=${CI_PROJECT_NAME}-${CI_COMMIT_BRANCH}-serv
       --set web.port=${CHART_WEB_PORT}
       --version ${CHART_VERSION}
-  only:
-    - skip
-  except:
-    variables:
-      - $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
+  rules:
+    - if: $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
+      when: never
+    - if: '$CI_COMMIT_BRANCH =~ $III_POSTMAN'
+      when: always

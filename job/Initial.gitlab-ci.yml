@@ -1,5 +1,5 @@
 Integration--initial pipeline:
-  stage: initial
+  stage: .pre
   image:
     name: iiiorg/iiidevops-cli:0.0.7
   variables:
@@ -17,6 +17,3 @@ Integration--initial pipeline:
       $TOKEN" -F "pipeline_id=\"${CI_PIPELINE_ID}\"" -F "project_name=\"${CI_PROJECT_NAME}\""
       -F "branch=\"${CI_COMMIT_BRANCH}\"" -F "commit_id=\"${CI_COMMIT_SHORT_SHA}\""
     - count-src.pl
-  except:
-    variables:
-      - $CI_COMMIT_MESSAGE =~ /.*\(store\)$/

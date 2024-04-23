@@ -1,37 +1,82 @@
-Test--SonarQube source code scan:
+.sonarqube-base:
   stage: scan
-  allow_failure: true
+  image: $SONAR_IMAGE:$SONAR_IMAGE_TAG
   variables:
-    iiidevops: sonarqube
-    CHART_TYPE: normal
-    CHART_NAME: "${CI_PROJECT_NAME}-${CI_COMMIT_BRANCH}-sq"
-    CHART_NORMAL_IMAGE: "dockerhub/sonarsource/sonar-scanner-cli"
+    GIT_STRATEGY: none
+    SONAR_IMAGE: $CHART_NORMAL_IMAGE
+    SONAR_IMAGE_TAG: $CHART_NORMAL_TAG
+    CHART_NORMAL_IMAGE: "$HARBOR_URL/dockerhub/sonarsource/sonar-scanner-cli"
     CHART_NORMAL_TAG: "4.6"
-    CHART_GRADLE_IMAGE: "dockerhub/library/gradle"
+    CHART_GRADLE_IMAGE: "$HARBOR_URL/dockerhub/library/gradle"
     CHART_GRADLE_TAG: "jdk11"
-    CHART_MAVEN_IMAGE: "dockerhub/library/maven"
+    CHART_MAVEN_IMAGE: "$HARBOR_URL/dockerhub/library/maven"
     CHART_MAVEN_TAG: "3.6.3-openjdk-11"
     CHART_ASP_IMAGE: "mcr.microsoft.com/dotnet/sdk"
     CHART_ASP_TAG: "6.0"
-    CHART_VERSION: "2.1.3"
+    SONAR_HOST_URL: $SONAR_URL
+    SONAR_LOGIN: $SONAR_TOKEN
+    PROJECT_NAME: "${CI_PROJECT_NAME}"
+    GIT_BRANCH: "${CI_COMMIT_BRANCH}"
+    GIT_COMMIT_ID: "${CI_COMMIT_SHORT_SHA}"
+  needs: ["Test--SonarQube source code scan:BlackWhite"]
+  cache:
+    key: $CI_COMMIT_REF_SLUG
+    paths:
+      - "**"
+    policy: pull
+  before_script: []
   script:
-    - helm uninstall -n ${CI_PROJECT_NAME} ${CHART_NAME} --cascade orphan || exit_code=$?
-    - helm install -n ${CI_PROJECT_NAME} ${CHART_NAME} -f common.yaml
-      ${HARBOR_CHART_REGISTRY}/scan-sonarqube
-      --set sonarqube.url=${SONAR_URL}
-      --set sonarqube.token=${SONAR_TOKEN}
-      --set type=${CHART_TYPE}
-      --set image.repository=${CHART_NORMAL_IMAGE}
-      --set sonarqube.runnerVersion=${CHART_NORMAL_TAG}
-      --set gradle.image=${CHART_GRADLE_IMAGE}
-      --set gradle.tag=${CHART_GRADLE_TAG}
-      --set maven.image=${CHART_MAVEN_IMAGE}
-      --set maven.tag=${CHART_MAVEN_TAG}
-      --set asp_dot_net.image=${CHART_ASP_IMAGE}
-      --set asp_dot_net.tag=${CHART_ASP_TAG}
-      --version ${CHART_VERSION}
-  only:
-    - skip
-  except:
-    variables:
-      - $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
+    - ls -alh
+    - cat sonar-project.properties
+    - |
+      if [ -f "iiidevops/sonarqube/SonarScan" ]; then
+        chmod +x ./iiidevops/sonarqube/SonarScan
+        ./iiidevops/sonarqube/SonarScan
+      else
+        /usr/bin/entrypoint.sh sonar-scanner
+      fi
+
+Test--SonarQube source code scan:BlackWhite:
+  stage: scan
+  image: $SONAR_IMAGE:$SONAR_IMAGE_TAG
+  variables:
+    SONAR_IMAGE: $HARBOR_URL/dockerhub/iiiorg/sonarqube-runner
+    SONAR_IMAGE_TAG: git-2.40.1-dev
+  before_script: []
+  script:
+    - rm -rf .git
+    - /usr/bin/black_white_list.sh
+    - /usr/bin/setup.sh
+  cache:
+    key: $CI_COMMIT_REF_SLUG
+    paths:
+      - "**"
+    policy: push
+  rules:
+    - if: $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
+      when: never
+    - if: '$CI_COMMIT_BRANCH =~ $III_SONARQUBE'
+      when: always
+
+Test--SonarQube source code scan:
+  extends: .sonarqube-base
+  rules:
+    - if: $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
+      when: never
+    - if: $CI_COMMIT_BRANCH =~ $III_SONARQUBE && $CHART_TYPE == "asp_dot_net"
+      variables:
+        SONAR_IMAGE: $CHART_ASP_IMAGE
+        SONAR_IMAGE_TAG: $CHART_ASP_TAG
+      when: always
+    - if: $CI_COMMIT_BRANCH =~ $III_SONARQUBE && $CHART_TYPE == "gradle"
+      variables:
+        SONAR_IMAGE: $CHART_GRADLE_IMAGE
+        SONAR_IMAGE_TAG: $CHART_GRADLE_TAG
+      when: always
+    - if: $CI_COMMIT_BRANCH =~ $III_SONARQUBE && $CHART_TYPE == "maven"
+      variables:
+        SONAR_IMAGE: $CHART_MAVEN_IMAGE
+        SONAR_IMAGE_TAG: $CHART_MAVEN_TAG
+      when: always
+    - if: $CI_COMMIT_BRANCH =~ $III_SONARQUBE
+      when: always

@@ -11,8 +11,9 @@ Test--Checkmarx source code scan:
       "branch": "''"${CI_COMMIT_BRANCH}"''","commit":"''"${CI_COMMIT_SHORT_SHA}"''", "sequence":"''"${CI_PIPELINE_ID}"''",
       "chart_version":"''"${CHART_VERSION}"''", "chart_name":"''"scan-checkmarx"''"
       }'''
-  only:
-    - skip
-  except:
-    variables:
-      - $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
+  rules:
+    - if: $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
+      when: never
+    - if: '$CI_COMMIT_BRANCH =~ $III_CHECKMARX'
+      when: always
+

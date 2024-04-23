@@ -19,14 +19,16 @@ Deploy--Prepare database value:
   cache:
     paths:
       - value.yaml
-  except:
-    variables:
-      - $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
+  rules:
+    - if: $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
+      when: never
+    - if: '$CI_COMMIT_BRANCH =~ $III_DEPLOY_DB'
+      when: always
 
 Deploy--Database:
   stage: deploy
   variables:
-    iiidevops: deployed-environments
+    iiidevops: deploy
     CHART_NAME: "${CI_PROJECT_NAME}-${CI_COMMIT_BRANCH}-db"
     CHART_DB_GUI: "true"
     CHART_DB_NAME: "todo_db"
@@ -54,11 +56,11 @@ Deploy--Database:
       --set db.username=${CHART_DB_USERNAME}
       --set persistence.enabled=${CHART_VOLUME_ENABLED}
       --version ${CHART_VERSION}
-  only:
-    - skip
-  except:
-    variables:
-      - $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
+  rules:
+    - if: $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
+      when: never
+    - if: '$CI_COMMIT_BRANCH =~ $III_DEPLOY_DB'
+      when: always
 
 Deploy--Wait DB deployment:
   stage: deploy
@@ -66,7 +68,7 @@ Deploy--Wait DB deployment:
     name: iiiorg/iiidevops-cli:0.0.7
     entrypoint: [ "" ]
   variables:
-    iiidevops: deployed-environments
+    iiidevops: deploy
     max_wait: 128
     namespace: ${CI_PROJECT_NAME}
     deploy_name: ${CI_PROJECT_NAME}-${CI_COMMIT_BRANCH}-db
@@ -79,8 +81,8 @@ Deploy--Wait DB deployment:
       --docker-username=${HARBOR_ROBOT}
       --docker-password=${HARBOR_ROBOT_SECRET} || true
     - deploy-wait.pl
-  only:
-    - skip
-  except:
-    variables:
-      - $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
+  rules:
+    - if: $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
+      when: never
+    - if: '$CI_COMMIT_BRANCH =~ $III_DEPLOY_DB'
+      when: always

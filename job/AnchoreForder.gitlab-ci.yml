@@ -32,8 +32,9 @@ Test--Anchore SBOM source code scan:
       --set pipeline.sequence=${CI_PIPELINE_ID}${CI_JOB_ID} 
       --set anchore.type=folder
       --version ${CHART_VERSION}
-  only:
-    - skip
-  except:
-    variables:
-      - $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
+  rules:
+    - if: $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
+      when: never
+    - if: '$CI_COMMIT_BRANCH =~ $III_ANCHORE_CODE'
+      when: always
+

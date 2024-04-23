@@ -9,6 +9,7 @@ include:
   - local: 'job/DockerScan.gitlab-ci.yml'
   - local: 'job/SetWebEnvironments.gitlab-ci.yml'
   - local: 'job/DeployWeb.gitlab-ci.yml'
+  - local: 'job/DeployService.gitlab-ci.yml'
   - local: 'job/TestAnchore.gitlab-ci.yml'
   - local: 'job/TestSideex.gitlab-ci.yml'
   - local: 'job/TestPostman.gitlab-ci.yml'
