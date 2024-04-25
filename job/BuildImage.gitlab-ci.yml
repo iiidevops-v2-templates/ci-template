@@ -6,7 +6,7 @@ Build image:
   inherit:
     default: false
   variables:
-    iiidevops: deployed-environments
+    iiidevops: build
     DOCKERFILE_PATH: Dockerfile
   script:
     - mkdir -p /kaniko/.docker
@@ -16,8 +16,8 @@ Build image:
       --dockerfile "${CI_PROJECT_DIR}/${DOCKERFILE_PATH}"
       --registry-mirror ${HARBOR_URL}
       --destination "${HARBOR_URL}/${CI_PROJECT_NAME}/${CI_COMMIT_BRANCH}:${CI_COMMIT_SHORT_SHA}"
-  only:
-    - skip
-  except:
-    variables:
-      - $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
+  rules:
+    - if: $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
+      when: never
+    - if: '$CI_COMMIT_BRANCH =~ $III_BUILD'
+      when: always

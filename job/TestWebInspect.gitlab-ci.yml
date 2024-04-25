@@ -17,8 +17,8 @@ Test--WebInspect:
       --set webinspect.password=${WIE_PASSWORD}
       --set webinspect.type=${WIE_TYPE}
       --version ${CHART_VERSION}
-  only:
-    - skip
-  except:
-    variables:
-      - $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
+  rules:
+    - if: $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
+      when: never
+    - if: '$CI_COMMIT_BRANCH =~ $III_WEBINSPECT'
+      when: always

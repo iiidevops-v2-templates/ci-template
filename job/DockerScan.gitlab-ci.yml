@@ -4,7 +4,7 @@ Build--Scan docker image:
     name: alpine:3.17
     entrypoint: [ "" ]
   variables:
-    iiidevops: deployed-environments
+    iiidevops: build
   needs: [ "Build image" ]
   before_script:
     - apk add --update curl
@@ -14,8 +14,8 @@ Build--Scan docker image:
       -F branch=${CI_COMMIT_BRANCH}
       -F commit_id=${CI_COMMIT_SHORT_SHA}
       -F pipeline_id=${CI_PIPELINE_ID}
-  only:
-    - skip
-  except:
-    variables:
-      - $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
+  rules:
+    - if: $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
+      when: never
+    - if: '$CI_COMMIT_BRANCH =~ $III_BUILD'
+      when: always

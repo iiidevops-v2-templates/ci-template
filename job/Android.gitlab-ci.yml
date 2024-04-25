@@ -45,13 +45,12 @@
 
   after_script:
     - if [ -f "./after-script.sh" ]; then chmod +x ./after-script.sh && ./after-script.sh; fi
+  rules:
+    - if: $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
+      when: never
+    - if: '$CI_COMMIT_BRANCH =~ $III_CMAS'
+      when: always
 
-  only:
-    - skip
-
-  except:
-    variables:
-      - $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
 
 # Basic android and gradle stuff
 # Check linting
@@ -139,8 +138,8 @@ Test--CMAS APK scan:
       --set cmas.a_mode=${CMAS_A_MODE}
       --set cmas.a_ert=${CMAS_A_ERT}
       --version ${CHART_VERSION}
-  only:
-    - skip
-  except:
-    variables:
-      - $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
+  rules:
+    - if: $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
+      when: never
+    - if: '$CI_COMMIT_BRANCH =~ $III_CMAS'
+      when: always

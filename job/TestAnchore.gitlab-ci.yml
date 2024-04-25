@@ -32,8 +32,8 @@ Test--Anchore SBOM:
       --set pipeline.sequence=${CI_PIPELINE_ID}${CI_JOB_ID} 
       --set anchore.type=image
       --version ${CHART_VERSION}
-  only:
-    - skip
-  except:
-    variables:
-      - $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
+  rules:
+    - if: $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
+      when: never
+    - if: '$CI_COMMIT_BRANCH =~ $III_ANCHORE'
+      when: always
