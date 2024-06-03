@@ -56,7 +56,7 @@ Test--SonarQube source code scan:BlackWhite:
     - if: $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
       when: never
     - if: '$CI_COMMIT_BRANCH =~ $III_SONARQUBE'
-      when: always
+      when: on_success
 
 Test--SonarQube source code scan:
   extends: .sonarqube-base
@@ -67,16 +67,16 @@ Test--SonarQube source code scan:
       variables:
         SONAR_IMAGE: $CHART_ASP_IMAGE
         SONAR_IMAGE_TAG: $CHART_ASP_TAG
-      when: always
+      when: on_success
     - if: $CI_COMMIT_BRANCH =~ $III_SONARQUBE && $CHART_TYPE == "gradle"
       variables:
         SONAR_IMAGE: $CHART_GRADLE_IMAGE
         SONAR_IMAGE_TAG: $CHART_GRADLE_TAG
-      when: always
+      when: on_success
     - if: $CI_COMMIT_BRANCH =~ $III_SONARQUBE && $CHART_TYPE == "maven"
       variables:
         SONAR_IMAGE: $CHART_MAVEN_IMAGE
         SONAR_IMAGE_TAG: $CHART_MAVEN_TAG
-      when: always
+      when: on_success
     - if: $CI_COMMIT_BRANCH =~ $III_SONARQUBE
-      when: always
+      when: on_success

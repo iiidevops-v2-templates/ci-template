@@ -1,24 +1,25 @@
 Test--WebInspect:
   stage: test
+  extends: .scan-job
   allow_failure: true
+  image: $HARBOR_URL/dockerhub/iiiorg/webinspect-runner:5.1.0
+  # TODO: update runner image
   variables:
     iiidevops: webinspect
     CHART_NAME: "${CI_PROJECT_NAME}-${CI_COMMIT_BRANCH}-test-webinspect"
     CHART_VERSION: "0.4.1"
+    project_name: ${CI_PROJECT_NAME}
+    target_origin: "https://${CI_PROJECT_NAME}-${CI_COMMIT_BRANCH}.${IIIDEV_ING}"
+    scan_policy_name: "OWASP Top 10 2021"
+    wi_scc_url: ${WIE_SCC_URL}
+    wi_dast_url: ${WIE_DAST_URL}
+    wi_username: ${WIE_USER}
+    wi_password: ${WIE_PASSWORD}
   script:
-    - helm uninstall -n ${CI_PROJECT_NAME} ${CHART_NAME} --cascade orphan || exit_code=$?
-    - helm install -n ${CI_PROJECT_NAME} ${CHART_NAME} -f common.yaml
-      ${HARBOR_CHART_REGISTRY}/test-webinspect
-      --set web.deployName=${CI_PROJECT_NAME}-${CI_COMMIT_BRANCH}-serv
-      --set webinspect.URL=${WIE_URL}
-      --set webinspect.dastUrl=${WIE_DAST_URL}
-      --set webinspect.sccUrl=${WIE_SCC_URL}
-      --set webinspect.user=${WIE_USER}
-      --set webinspect.password=${WIE_PASSWORD}
-      --set webinspect.type=${WIE_TYPE}
-      --version ${CHART_VERSION}
+    - echo $target_origin
+    - start-scan
   rules:
     - if: $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
       when: never
     - if: '$CI_COMMIT_BRANCH =~ $III_WEBINSPECT'
-      when: always
+      when: on_success
