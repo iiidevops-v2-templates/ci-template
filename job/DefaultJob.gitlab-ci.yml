@@ -1,9 +1,11 @@
 # Job start here
 default:
+  interruptible: true
+
+.default:
   image:
     name: alpine/k8s:1.25.16
     entrypoint: [ "" ]
-  interruptible: true
   before_script:
     - apk add --update curl
     - 'TOKEN="$(curl -s -L -X POST ${IIIDEV_URL}/user/login -H "Content-Type: application/json"
@@ -38,3 +40,16 @@ default:
       timezone:
         tz: Asia/Taipei
       EOF
+
+.scan-job:
+  variables:
+    git_url: "${CI_PROJECT_URL}.git"
+    git_repo: "${CI_PROJECT_NAME}"
+    git_token: "${GITLAB_TOKEN}"
+    git_branch: "${CI_COMMIT_BRANCH}"
+    git_commit_id: "${CI_COMMIT_SHORT_SHA}"
+    api_origin: "${IIIDEV_URL}"
+    username: "${BOT_USERNAME}"
+    password: "${BOT_PASSWORD}"
+    api_username: "${BOT_USERNAME}"
+    api_password: "${BOT_PASSWORD}"

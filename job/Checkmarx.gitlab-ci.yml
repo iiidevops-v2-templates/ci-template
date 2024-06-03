@@ -1,5 +1,7 @@
 Test--Checkmarx source code scan:
   stage: scan
+  extends:
+    - .default
   allow_failure: true
   variables:
     iiidevops: checkmarx
@@ -15,5 +17,5 @@ Test--Checkmarx source code scan:
     - if: $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
       when: never
     - if: '$CI_COMMIT_BRANCH =~ $III_CHECKMARX'
-      when: always
+      when: on_success
 

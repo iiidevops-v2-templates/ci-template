@@ -49,7 +49,7 @@
     - if: $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
       when: never
     - if: '$CI_COMMIT_BRANCH =~ $III_CMAS'
-      when: always
+      when: on_success
 
 
 # Basic android and gradle stuff
@@ -63,7 +63,7 @@ Build--AndroidLintDebug:
     paths:
       - app/lint/reports/lint-results-debug.html
     expose_as: "lint-report"
-    when: always
+    when: on_success
 
 # Make Project
 Build--AndroidDebugApp:
@@ -142,4 +142,4 @@ Test--CMAS APK scan:
     - if: $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
       when: never
     - if: '$CI_COMMIT_BRANCH =~ $III_CMAS'
-      when: always
+      when: on_success

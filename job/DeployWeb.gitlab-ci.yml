@@ -1,5 +1,7 @@
 Deploy--Web:
   stage: deploy
+  extends:
+    - .default
   variables:
     iiidevops: deploy
     CHART_WEB_PORT: 80
@@ -43,4 +45,4 @@ Deploy--Web:
     - if: $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
       when: never
     - if: '$CI_COMMIT_BRANCH =~ $III_DEPLOY'
-      when: always
+      when: on_success

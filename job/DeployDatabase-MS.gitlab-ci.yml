@@ -18,10 +18,12 @@ Deploy--Prepare database value:
     - if: $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
       when: never
     - if: '$CI_COMMIT_BRANCH =~ $III_DEPLOY_DB'
-      when: always
+      when: on_success
 
 Deploy--Database (MS-SQL):
   stage: deploy
+  extends:
+    - .default
   variables:
     iiidevops: deploy
     CHART_NAME: "${CI_PROJECT_NAME}-${CI_COMMIT_BRANCH}-db"
@@ -49,10 +51,12 @@ Deploy--Database (MS-SQL):
     - if: $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
       when: never
     - if: '$CI_COMMIT_BRANCH =~ $III_DEPLOY_DB'
-      when: always
+      when: on_success
 
 Deploy--Wait DB deployment:
   stage: deploy
+  extends:
+    - .default
   image:
     name: iiiorg/iiidevops-cli:0.0.7
     entrypoint: [ "" ]
@@ -74,4 +78,4 @@ Deploy--Wait DB deployment:
     - if: $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
       when: never
     - if: '$CI_COMMIT_BRANCH =~ $III_DEPLOY_DB'
-      when: always
+      when: on_success
