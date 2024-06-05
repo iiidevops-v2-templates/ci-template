@@ -3,13 +3,13 @@
   image: $SONAR_IMAGE:$SONAR_IMAGE_TAG
   variables:
     GIT_STRATEGY: none
-    SONAR_IMAGE: $CHART_NORMAL_IMAGE
+    SONAR_IMAGE: $HARBOR_URL/$CHART_NORMAL_IMAGE
     SONAR_IMAGE_TAG: $CHART_NORMAL_TAG
-    CHART_NORMAL_IMAGE: "$HARBOR_URL/dockerhub/sonarsource/sonar-scanner-cli"
+    CHART_NORMAL_IMAGE: "dockerhub/sonarsource/sonar-scanner-cli"
     CHART_NORMAL_TAG: "4.6"
-    CHART_GRADLE_IMAGE: "$HARBOR_URL/dockerhub/library/gradle"
+    CHART_GRADLE_IMAGE: "dockerhub/library/gradle"
     CHART_GRADLE_TAG: "jdk11"
-    CHART_MAVEN_IMAGE: "$HARBOR_URL/dockerhub/library/maven"
+    CHART_MAVEN_IMAGE: "dockerhub/library/maven"
     CHART_MAVEN_TAG: "3.6.3-openjdk-11"
     CHART_ASP_IMAGE: "mcr.microsoft.com/dotnet/sdk"
     CHART_ASP_TAG: "6.0"
@@ -70,12 +70,12 @@ Test--SonarQube source code scan:
       when: on_success
     - if: $CI_COMMIT_BRANCH =~ $III_SONARQUBE && $CHART_TYPE == "gradle"
       variables:
-        SONAR_IMAGE: $CHART_GRADLE_IMAGE
+        SONAR_IMAGE: $HARBOR_URL/$CHART_GRADLE_IMAGE
         SONAR_IMAGE_TAG: $CHART_GRADLE_TAG
       when: on_success
     - if: $CI_COMMIT_BRANCH =~ $III_SONARQUBE && $CHART_TYPE == "maven"
       variables:
-        SONAR_IMAGE: $CHART_MAVEN_IMAGE
+        SONAR_IMAGE: $HARBOR_URL/$CHART_MAVEN_IMAGE
         SONAR_IMAGE_TAG: $CHART_MAVEN_TAG
       when: on_success
     - if: $CI_COMMIT_BRANCH =~ $III_SONARQUBE
