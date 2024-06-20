@@ -20,6 +20,8 @@ Test--Sideex:
   script:
     - node /workdir/app.js
   rules:
+    - if: '$PLG_SIDEEX == "false"'
+      when: never
     - if: $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
       when: never
     - if: '$CI_COMMIT_BRANCH =~ $III_SIDEEX'

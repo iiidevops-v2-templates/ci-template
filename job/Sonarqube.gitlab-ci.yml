@@ -53,6 +53,8 @@ Test--SonarQube source code scan:BlackWhite:
       - "**"
     policy: push
   rules:
+    - if: '$PLG_SONARQUBE == "false"'
+      when: never
     - if: $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
       when: never
     - if: '$CI_COMMIT_BRANCH =~ $III_SONARQUBE'
@@ -61,6 +63,8 @@ Test--SonarQube source code scan:BlackWhite:
 Test--SonarQube source code scan:
   extends: .sonarqube-base
   rules:
+    - if: '$PLG_SONARQUBE == "false"'
+      when: never
     - if: $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
       when: never
     - if: $CI_COMMIT_BRANCH =~ $III_SONARQUBE && $CHART_TYPE == "asp_dot_net"

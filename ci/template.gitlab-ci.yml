@@ -1,3 +1,11 @@
+stages:
+  - initial
+  - scan
+  - aiwork
+  - build
+  - deploy
+  - test
+
 include:
   - local: 'job/Android.gitlab-ci.yml'
   - local: 'job/DefaultJob.gitlab-ci.yml'

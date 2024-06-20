@@ -1,5 +1,6 @@
 
 .deploy-service:
+  extends: .default
   rules:
     - if: $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
       when: never
