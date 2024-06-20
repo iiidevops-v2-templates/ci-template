@@ -1,0 +1,103 @@
+AI Work--Prepare AIGC:
+  stage: aiwork
+  extends:
+    - .default
+  image:
+    name: iiiorg/iiidevops-cli:0.0.7
+    entrypoint:
+    - ''
+  variables:
+    iiidevops: aiwork
+    max_wait: 128
+    namespace: "${CI_PROJECT_NAME}"
+    deploy_name: "${CI_PROJECT_NAME}-${CI_COMMIT_BRANCH}-serv-dpy"
+  script:
+  - kubectl delete configmap -n ${CI_PROJECT_NAME} ${CI_PROJECT_NAME}-${CI_COMMIT_BRANCH}-env
+    --ignore-not-found=true
+  - chk-app-env.pl
+  - kubectl create configmap -n ${CI_PROJECT_NAME} ${CI_PROJECT_NAME}-${CI_COMMIT_BRANCH}-env
+    --from-env-file=iiidevops/app.env
+  - 'kubectl annotate configmap -n ${CI_PROJECT_NAME} ${CI_PROJECT_NAME}-${CI_COMMIT_BRANCH}-env
+    iiidevops.org/project_name=${CICD_GIT_REPO_NAME} iiidevops.org/branch=${CI_COMMIT_BRANCH}
+    iiidevops.org/commit_id=${CI_COMMIT_SHORT_SHA} iiidevops.org/type=appenv
+
+    '
+  - 'kubectl create secret docker-registry harbor-local -n ${CI_PROJECT_NAME} --docker-server=${HARBOR_URL}
+    --docker-username=${HARBOR_ROBOT} --docker-password=${HARBOR_ROBOT_SECRET} ||
+    true
+
+    '
+  rules:
+  - if: "$CI_COMMIT_MESSAGE =~ /.*\\(store\\)$/"
+    when: never
+  - if: "$CI_COMMIT_BRANCH =~ $III_AIWORK"
+    when: always
+
+AI Work--Fixing Vulnerabilities:
+  stage: aiwork
+  extends:
+    - .default
+  allow_failure: true
+  needs:
+  - AI Work--Prepare AIGC
+  variables:
+    iiidevops: aiwork
+    OPEN_AI_API_KEY: ${AI_DEMO_KEY}
+    SONARQUBE_TOKEN: ${SONAR_DEMO_TOKEN}
+    GITLAB_ROOT_TOKEN: ${GITLAB_DEMO_TOKEN}
+    AIGC_IMAGE: harbor.dev7.iiidevops.org/library/aigc-runner
+    AIGC_IMAGE_TAG: master
+    UNITTEST_ENABLE: "false"
+    UNITTEST_IMAGE: harbor.demo.iiidevops.org/proj-unittest-img/master
+    UNITTEST_IMAGE_TAG: 3.8.16
+    WAIT_MAX: 600
+    CONFIG_ENV: "true"
+    CHART_TYPE: normal
+    CHART_NAME: "${CI_PROJECT_NAME}-${CI_COMMIT_BRANCH}-aigc"
+    CHART_NORMAL_IMAGE: dockerhub/sonarsource/sonar-scanner-cli
+    CHART_NORMAL_TAG: '5'
+    CHART_GRADLE_IMAGE: dockerhub/library/gradle
+    CHART_GRADLE_TAG: jdk11
+    CHART_MAVEN_IMAGE: dockerhub/library/maven
+    CHART_MAVEN_TAG: 3.6.3-openjdk-11
+    CHART_ASP_IMAGE: mcr.microsoft.com/dotnet/sdk
+    CHART_ASP_TAG: '6.0'
+    CHART_VERSION: 0.0.2
+  script:
+  - helm uninstall -n ${CI_PROJECT_NAME} ${CHART_NAME} --wait --ignore-not-found
+  - helm install -n ${CI_PROJECT_NAME} ${CHART_NAME} -f common.yaml ${HARBOR_CHART_REGISTRY}/aigc-runner
+    --set sonarqube.url=${SONAR_URL} --set sonarqube.token=${SONAR_TOKEN} --set sonarqube.type=${CHART_TYPE}
+    --set sonarqube.image.repository=${CHART_NORMAL_IMAGE} --set sonarqube.runnerVersion=${CHART_NORMAL_TAG}
+    --set sonarqube.gradle.image=${CHART_GRADLE_IMAGE} --set sonarqube.gradle.tag=${CHART_GRADLE_TAG}
+    --set sonarqube.maven.image=${CHART_MAVEN_IMAGE} --set sonarqube.maven.tag=${CHART_MAVEN_TAG} 
+    --set sonarqube.asp_dot_net.image=${CHART_ASP_IMAGE} --set sonarqube.asp_dot_net.tag=${CHART_ASP_TAG}
+    --set unitTest.enable=${UNITTEST_ENABLE} --set unitTest.image.repository=${UNITTEST_IMAGE} --set unitTest.image.tag=${UNITTEST_IMAGE_TAG}
+    --set aigc.openAiKey=${OPEN_AI_API_KEY} --set aigc.sonarqube.token=${SONARQUBE_TOKEN}
+    --set aigc.image.repository=${AIGC_IMAGE} --set aigc.image.tag=${AIGC_IMAGE_TAG} --set aigc.image.pullPolicy="Always"
+    --set git.repoID=${CI_PROJECT_ID} --set git.userID=${GITLAB_USER_ID} 
+    --set git.api=${CI_API_V4_URL} --set git.rootToken=${GITLAB_ROOT_TOKEN}
+    --set configmap.env=${CONFIG_ENV}
+    --version ${CHART_VERSION}
+  - |
+    cat <<EOF > wait-aigc.sh
+    AIGC_RUNNER=""
+    Time=0
+    while [[ ! -n \$AIGC_RUNNER ]] ; do
+        AIGC_RUNNER=\$(kubectl get pod --selector=job-name=${CHART_NAME} -n ${CI_PROJECT_NAME} | grep "Running\|Completed")
+        sleep 5
+        Time=\$((\$Time + 5))
+        echo \$AIGC_RUNNER
+    echo "Wait AIGC_RUNNER Runner  \${Time}s"
+        if [ \$Time -ge \$WAIT_MAX ]; then
+            echo "Max wait time reached"
+            exit 1;
+        fi
+    done
+    EOF
+  - bash wait-aigc.sh
+  - kubectl logs -n ${CI_PROJECT_NAME} $(kubectl get pod --selector=job-name=${CHART_NAME} --sort-by=.metadata.creationTimestamp -o jsonpath="{.items[-1:].metadata.name}" -n ${CI_PROJECT_NAME}) -f
+  rules:
+  - if: "$CI_COMMIT_MESSAGE =~ /.*\\(store\\)$/"
+    when: never
+  - if: "$CI_COMMIT_BRANCH =~ $III_AIWORK"
+    when: always

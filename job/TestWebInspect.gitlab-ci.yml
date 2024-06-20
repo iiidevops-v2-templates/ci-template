@@ -19,6 +19,8 @@ Test--WebInspect:
     - echo $target_origin
     - start-scan
   rules:
+    - if: '$PLG_WEBINSPECT == "false"'
+      when: never
     - if: $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
       when: never
     - if: '$CI_COMMIT_BRANCH =~ $III_WEBINSPECT'

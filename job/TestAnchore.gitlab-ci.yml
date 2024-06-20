@@ -12,6 +12,8 @@ Test--Anchore SBOM:
   script:
     - startup.sh $SCAN_IMAGE
   rules:
+    - if: '$PLG_SBOM == "false"'
+      when: never
     - if: $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
       when: never
     - if: '$CI_COMMIT_BRANCH =~ $III_ANCHORE'

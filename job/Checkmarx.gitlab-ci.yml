@@ -14,6 +14,8 @@ Test--Checkmarx source code scan:
       "chart_version":"''"${CHART_VERSION}"''", "chart_name":"''"scan-checkmarx"''"
       }'''
   rules:
+    - if: '$PLG_CHECKMARX == "false"'
+      when: never
     - if: $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
       when: never
     - if: '$CI_COMMIT_BRANCH =~ $III_CHECKMARX'

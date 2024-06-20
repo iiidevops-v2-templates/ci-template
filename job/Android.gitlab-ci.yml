@@ -46,6 +46,10 @@
   after_script:
     - if [ -f "./after-script.sh" ]; then chmod +x ./after-script.sh && ./after-script.sh; fi
   rules:
+    - if: '$CI_COMMIT_BRANCH =~ $III_BUILD'
+      when: on_success
+    - if: '$PLG_CMAS == "false"'
+      when: never
     - if: $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
       when: never
     - if: '$CI_COMMIT_BRANCH =~ $III_CMAS'
@@ -82,6 +86,13 @@ Test--AndroidTestDebug:
   stage: test
   script:
     - ./gradlew -Pci --console=plain :app:testDebug
+  rules:
+    - if: '$PLG_CMAS == "false"'
+      when: never
+    - if: $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
+      when: never
+    - if: '$CI_COMMIT_BRANCH =~ $III_CMAS'
+      when: on_success
 
 #CMAS scan
 Test--CMAS APK scan:
@@ -139,6 +150,8 @@ Test--CMAS APK scan:
       --set cmas.a_ert=${CMAS_A_ERT}
       --version ${CHART_VERSION}
   rules:
+    - if: '$PLG_CMAS == "false"'
+      when: never
     - if: $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
       when: never
     - if: '$CI_COMMIT_BRANCH =~ $III_CMAS'

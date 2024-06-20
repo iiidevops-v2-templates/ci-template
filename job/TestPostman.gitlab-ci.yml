@@ -13,6 +13,8 @@ Test--Postman:
   script:
     - node /workdir/app.js
   rules:
+    - if: '$PLG_POSTMAN == "false"'
+      when: never
     - if: $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
       when: never
     - if: '$CI_COMMIT_BRANCH =~ $III_POSTMAN'
