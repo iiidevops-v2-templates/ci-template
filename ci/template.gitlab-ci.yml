@@ -7,7 +7,6 @@ stages:
   - test
 
 include:
-  - local: 'job/Android.gitlab-ci.yml'
   - local: 'job/DefaultJob.gitlab-ci.yml'
   - local: 'job/Initial.gitlab-ci.yml'
   - local: 'job/Sonarqube.gitlab-ci.yml'
