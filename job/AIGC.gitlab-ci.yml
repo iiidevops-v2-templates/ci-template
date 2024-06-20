@@ -62,7 +62,10 @@ AI Work--Fixing Vulnerabilities:
     CHART_MAVEN_TAG: 3.6.3-openjdk-11
     CHART_ASP_IMAGE: mcr.microsoft.com/dotnet/sdk
     CHART_ASP_TAG: '6.0'
-    CHART_VERSION: 0.0.2
+    MAX_ITERATIONS: "10"
+    MIN_FIX_PERCENTAGE: "50" 
+    SONARQUBE_ISSUE_TYPES: "VULNERABILITY"
+    CHART_VERSION: 0.0.3
   script:
   - helm uninstall -n ${CI_PROJECT_NAME} ${CHART_NAME} --wait --ignore-not-found
   - helm install -n ${CI_PROJECT_NAME} ${CHART_NAME} -f common.yaml ${HARBOR_CHART_REGISTRY}/aigc-runner
@@ -76,7 +79,8 @@ AI Work--Fixing Vulnerabilities:
     --set aigc.image.repository=${AIGC_IMAGE} --set aigc.image.tag=${AIGC_IMAGE_TAG} --set aigc.image.pullPolicy="Always"
     --set git.repoID=${CI_PROJECT_ID} --set git.userID=${GITLAB_USER_ID} 
     --set git.api=${CI_API_V4_URL} --set git.rootToken=${GITLAB_ROOT_TOKEN}
-    --set configmap.env=${CONFIG_ENV}
+    --set aigc.iterations.max=${MAX_ITERATIONS} --set aigc.fixPercentage.min=${MIN_FIX_PERCENTAGE}
+    --set sonarqube.issue.types=${SONARQUBE_ISSUE_TYPES} --set configmap.env=${CONFIG_ENV}
     --version ${CHART_VERSION}
   - |
     cat <<EOF > wait-aigc.sh
