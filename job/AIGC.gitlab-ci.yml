@@ -45,7 +45,7 @@ AI Work--Fixing Vulnerabilities:
     OPEN_AI_API_KEY: ${AI_DEMO_KEY}
     SONARQUBE_TOKEN: ${SONAR_DEMO_TOKEN}
     GITLAB_ROOT_TOKEN: ${GITLAB_DEMO_TOKEN}
-    AIGC_IMAGE: harbor.dev7.iiidevops.org/library/aigc-runner
+    AIGC_IMAGE: harbor.demo.iiidevops.org/iiiorg/aigc-runner:master
     AIGC_IMAGE_TAG: master
     UNITTEST_ENABLE: "false"
     UNITTEST_IMAGE: harbor.demo.iiidevops.org/proj-unittest-img/master
