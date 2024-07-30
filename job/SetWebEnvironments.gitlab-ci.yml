@@ -38,6 +38,8 @@ Deploy--Set environment and wait deployment:
         "run_web_success":"''"true"''"
       }'''
   rules:
+    - if: $CI_COMMIT_TAG
+      when: never
     - if: $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
       when: never
     - if: '$CI_COMMIT_BRANCH =~ $III_DEPLOY'
