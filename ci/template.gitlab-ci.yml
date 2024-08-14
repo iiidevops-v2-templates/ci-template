@@ -10,6 +10,7 @@ include:
   - local: 'job/DefaultJob.gitlab-ci.yml'
   - local: 'job/Initial.gitlab-ci.yml'
   - local: 'job/Sonarqube.gitlab-ci.yml'
+  - local: 'job/Semgrep.gitlab-ci.yml'
   - local: 'job/Checkmarx.gitlab-ci.yml'
   - local: 'job/AnchoreForder.gitlab-ci.yml'
   - local: 'job/BuildImage.gitlab-ci.yml'
