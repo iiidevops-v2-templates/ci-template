@@ -21,7 +21,7 @@ variables:
       when: never
     - if: "$CI_COMMIT_MESSAGE =~ /.*\\(store\\)$/"
       when: never
-    - if: "$CI_COMMIT_BRANCH =~ $III_SEMGREP"
+    - if: '$CI_COMMIT_BRANCH =~ $III_SEMGREP'
       when: on_success
 
 .commands:
@@ -136,30 +136,6 @@ Test--Semgrep SAST code scan:
       when: never
     - if: $SAST_EXCLUDED_ANALYZERS =~ /semgrep/
       when: never
-    - if: $CI_COMMIT_BRANCH
-      exists:
-        - '**/*.py'
-        - '**/*.js'
-        - '**/*.jsx'
-        - '**/*.ts'
-        - '**/*.tsx'
-        - '**/*.c'
-        - '**/*.cc'
-        - '**/*.cpp'
-        - '**/*.c++'
-        - '**/*.cp'
-        - '**/*.cxx'
-        - '**/*.go'
-        - '**/*.java'
-        - '**/*.html'
-        - '**/*.cs'
-        - '**/*.scala'
-        - '**/*.sc'
-        - '**/*.php'
-        - '**/*.swift'
-        - '**/*.m'
-        - '**/*.rb'
-        - '**/*.kt'
 
 sobelow-sast:
   extends: .sast-analyzer
