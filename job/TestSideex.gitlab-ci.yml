@@ -3,7 +3,7 @@ Test--Sideex:
   extends: .scan-job
   allow_failure: true
   image:
-    name: $HARBOR_URL/dockerhub/iiiorg/sideex-runner:2.10.0
+    name: $HARBOR_URL/dockerhub/iiiorg/sideex-runner:2.11.0
   variables:
     iiidevops: sideex
     CHART_WEB_PORT: 80

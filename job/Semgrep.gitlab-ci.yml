@@ -21,8 +21,8 @@ variables:
       when: never
     - if: "$CI_COMMIT_MESSAGE =~ /.*\\(store\\)$/"
       when: never
-    - if: "$CI_COMMIT_BRANCH !~ $III_SEMGREP"
-      when: never
+    - if: "$CI_COMMIT_BRANCH =~ $III_SEMGREP"
+      when: always
 
 .commands:
   script:
@@ -59,7 +59,7 @@ variables:
 
         get_token
 
-        curl -L -X POST ${IIIDEV_URL}/v2/summary/semgrep/result?job_id=${CI_JOB_ID} \
+        curl -L -X POST ${IIIDEV_URL}/v2/summary/semgrep/result?job_id=${CI_JOB_ID}\&pipeline_id=${CI_PIPELINE_ID} \
           -H "Authorization:Bearer $TOKEN" \
           -H "Content-Type: multipart/form-data; boundary=WebAppBoundary${CI_COMMIT_SHORT_SHA}" \
           -F "report=@./gl-sast-report.json"
@@ -136,31 +136,6 @@ Test--Semgrep SAST code scan:
       when: never
     - if: $SAST_EXCLUDED_ANALYZERS =~ /semgrep/
       when: never
-    - if: $CI_COMMIT_BRANCH
-      exists:
-        - '**/*.py'
-        - '**/*.js'
-        - '**/*.jsx'
-        - '**/*.ts'
-        - '**/*.tsx'
-        - '**/*.c'
-        - '**/*.cc'
-        - '**/*.cpp'
-        - '**/*.c++'
-        - '**/*.cp'
-        - '**/*.cxx'
-        - '**/*.go'
-        - '**/*.java'
-        - '**/*.html'
-        - '**/*.cs'
-        - '**/*.scala'
-        - '**/*.sc'
-        - '**/*.php'
-        - '**/*.swift'
-        - '**/*.m'
-        - '**/*.rb'
-        - '**/*.kt'
-      when: on_success
 
 sobelow-sast:
   extends: .sast-analyzer

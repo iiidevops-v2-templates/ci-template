@@ -6,7 +6,7 @@ Test--Checkmarx source code scan:
   variables:
     iiidevops: checkmarx
     CHART_NAME: "${CI_PROJECT_NAME}-${CI_COMMIT_BRANCH}-cmx"
-    CHART_VERSION: 2.1.1
+    CHART_VERSION: 2.1.2
   script:
     - 'curl -s -L -X POST ${IIIDEV_URL}/checkmarx/queue -H "Content-Type:
       application/json" -H "Authorization: Bearer $TOKEN" -d ''{ "project_name": "''"${CI_PROJECT_NAME}"''",

@@ -3,7 +3,7 @@ Test--Postman:
   extends: .scan-job
   allow_failure: true
   image:
-    name: $HARBOR_URL/dockerhub/iiiorg/newman-runner:4.2.0
+    name: $HARBOR_URL/dockerhub/iiiorg/newman-runner:4.3.0
   variables:
     iiidevops: postman
     CHART_WEB_PORT: 80
