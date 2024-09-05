@@ -28,6 +28,7 @@ Deploy--Web:
       --set kube.ingress.proxy_body_size=${CHART_PROXY_BODY_SIZE}
       --set persistence.enabled=${CHART_VOLUME_ENABLED}
       --set persistence.mountPath=${CHART_VOLUME_PATH}
+      --set resources.requests.cpu=100m --set resources.requests.memory=100Mi 
       --version ${CHART_VERSION}  
     - 'curl -s -L -X POST ${IIIDEV_URL}/project/${CI_PROJECT_NAME}/pipeline 
       -H "Content-Type: application/json" 

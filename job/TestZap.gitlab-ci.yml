@@ -2,7 +2,9 @@ Test--ZAP:
   stage: test
   extends: .scan-job
   allow_failure: true
-  image: $HARBOR_URL/dockerhub/iiiorg/zap-runner:2.10.0
+  image:
+    name:   $HARBOR_URL/dockerhub/iiiorg/zap-runner:2.10.0
+    entrypoint: [ "" ]
   variables:
     iiidevops: zap
     CHART_WEB_PORT: 80

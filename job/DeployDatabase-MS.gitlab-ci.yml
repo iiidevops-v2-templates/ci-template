@@ -1,5 +1,7 @@
 Deploy--Prepare database value:
-  image: alpine:3.17
+  image:
+    name:  alpine:3.17
+    entrypoint: [ "" ]
   stage: deploy
   inherit:
     default: false

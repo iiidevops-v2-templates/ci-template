@@ -3,7 +3,9 @@ Test--Anchore SBOM source code scan:
   extends: .scan-job
   allow_failure: true
   image:
-    name: $HARBOR_URL/dockerhub/iiiorg/anchore-runner:2.10.0
+    name: $HARBOR_URL/dockerhub/iiiorg/anchore-runner:2.12.0
+    entrypoint:
+    - ''
   variables:
     iiidevops: anchore-code
     SCAN_TYPE: folder

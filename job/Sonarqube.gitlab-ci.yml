@@ -1,6 +1,8 @@
 .sonarqube-base:
   stage: scan
-  image: $SONAR_IMAGE:$SONAR_IMAGE_TAG
+  image:
+    name:  $SONAR_IMAGE:$SONAR_IMAGE_TAG
+    entrypoint: [ "" ]
   variables:
     GIT_STRATEGY: none
     SONAR_IMAGE: $HARBOR_URL/$CHART_NORMAL_IMAGE
@@ -38,7 +40,9 @@
 
 Test--SonarQube source code scan:BlackWhite:
   stage: scan
-  image: $SONAR_IMAGE:$SONAR_IMAGE_TAG
+  image:
+    name: $SONAR_IMAGE:$SONAR_IMAGE_TAG
+    entrypoint: [ "" ]
   variables:
     SONAR_IMAGE: $HARBOR_URL/dockerhub/iiiorg/sonarqube-runner
     SONAR_IMAGE_TAG: git-2.40.1-dev

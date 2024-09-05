@@ -4,6 +4,7 @@ Test--Sideex:
   allow_failure: true
   image:
     name: $HARBOR_URL/dockerhub/iiiorg/sideex-runner:2.11.0
+    entrypoint: [ "" ]
   variables:
     iiidevops: sideex
     CHART_WEB_PORT: 80
