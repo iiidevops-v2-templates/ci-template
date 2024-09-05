@@ -2,8 +2,9 @@ Test--WebInspect:
   stage: test
   extends: .scan-job
   allow_failure: true
-  image: $HARBOR_URL/dockerhub/iiiorg/webinspect-runner:5.1.0
-  # TODO: update runner image
+  image:
+    name:  $HARBOR_URL/dockerhub/iiiorg/webinspect-runner:5.1.0
+    entrypoint: [ "" ]
   variables:
     iiidevops: webinspect
     CHART_NAME: "${CI_PROJECT_NAME}-${CI_COMMIT_BRANCH}-test-webinspect"

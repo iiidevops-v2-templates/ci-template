@@ -2,6 +2,7 @@ Integration--initial pipeline:
   stage: initial
   image:
     name: iiiorg/iiidevops-cli:0.0.7
+    entrypoint: [ "" ]
   variables:
     iiidevops: initial-pipeline
     repo_name: ${CI_PROJECT_NAME}
