@@ -3,7 +3,7 @@ Test--ZAP:
   extends: .scan-job
   allow_failure: true
   image:
-    name:   $HARBOR_URL/dockerhub/iiiorg/zap-runner:2.10.0
+    name:   $HARBOR_URL/dockerhub/iiiorg/zap-runner:2.12.1
     entrypoint: [ "" ]
   variables:
     iiidevops: zap
