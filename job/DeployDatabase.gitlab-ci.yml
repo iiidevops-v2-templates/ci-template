@@ -43,7 +43,7 @@ Deploy--Database:
     CHART_DB_TAG: "13"
     CHART_DB_TYPE: "postgresql"
     CHART_VOLUME_ENABLED: "false"
-    CHART_VERSION: "1.0.2"
+    CHART_VERSION: "1.0.3"
   needs:
     - "Deploy--Prepare database value"
   cache:
@@ -61,6 +61,8 @@ Deploy--Database:
       --set db.type=${CHART_DB_TYPE}
       --set db.username=${CHART_DB_USERNAME}
       --set persistence.enabled=${CHART_VOLUME_ENABLED}
+      --set resources.requests.cpu=100m 
+      --set resources.requests.memory=100Mi 
       --version ${CHART_VERSION}
   rules:
     - if: $CI_COMMIT_TAG

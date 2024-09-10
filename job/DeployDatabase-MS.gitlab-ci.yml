@@ -33,7 +33,7 @@ Deploy--Database (MS-SQL):
     CHART_DB_PASSWORD: "DevOps_123"
     CHART_DB_TAG: "2019-CU10-ubuntu-20.04"
     CHART_VOLUME_ENABLED: 'false'
-    CHART_VERSION: "0.2.1"
+    CHART_VERSION: "0.2.2"
   needs:
     - "Deploy--Prepare database value"
   cache:
@@ -48,6 +48,8 @@ Deploy--Database (MS-SQL):
       --set db.name=${CHART_DB_NAME}
       --set auth.saPassword=${CHART_DB_PASSWORD}
       --set image.tag=${CHART_DB_TAG}
+      --set resources.requests.cpu=100m 
+      --set resources.requests.memory=100Mi 
       --version ${CHART_VERSION}
   rules:
     - if: $CI_COMMIT_MESSAGE =~ /.*\(store\)$/

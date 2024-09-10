@@ -10,8 +10,23 @@ Test--Anchore SBOM source code scan:
     iiidevops: anchore-code
     SCAN_TYPE: folder
     GRYPE_DB_CACHE_DIR: /mnt/cache/anchore
+    syft_remote_license: "false"
   script:
-    - startup.sh
+  - apk add envsubst
+  - |
+    cat <<EOF >.syft.yaml.tmp
+    golang:
+       search-remote-licenses: ${syft_remote_license}
+    java:
+      maven-url: "https://repo1.maven.org/maven2"
+      max-parent-recursive-depth: 5
+      use-network: ${syft_remote_license}
+    javascript:
+      search-remote-licenses: ${syft_remote_license}
+      npm-base-url: "https://registry.npmjs.org"
+    EOF
+  - envsubst < .syft.yaml.tmp > .syft.yaml
+  - startup.sh
   rules:
     - if: $CI_COMMIT_TAG
       when: never
