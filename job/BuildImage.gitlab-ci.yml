@@ -4,7 +4,7 @@ Build image:
     name: gcr.io/kaniko-project/executor:v1.9.0-debug
     entrypoint: [ "" ]
   inherit:
-    default: false
+    default: true
   variables:
     iiidevops: build
     DOCKERFILE_PATH: Dockerfile
