@@ -24,3 +24,4 @@ include:
   - local: 'job/TestWebInspect.gitlab-ci.yml'
   - local: 'job/TestZap.gitlab-ci.yml'
   - local: 'job/CheckCN.gitlab-ci.yml'
+  - local: 'job/CleanCache.gitlab-ci.yml'
