@@ -155,7 +155,6 @@ sobelow-sast:
     SAST_ANALYZER_IMAGE_TAG: 5
     SAST_ANALYZER_IMAGE: "$SECURE_ANALYZERS_PREFIX/sobelow:$SAST_ANALYZER_IMAGE_TAG"
   rules:
-    - !reference [.rules, rules]
     - if: $SAST_DISABLED == 'true' || $SAST_DISABLED == '1'
       when: never
     - if: $SAST_EXCLUDED_ANALYZERS =~ /sobelow/
@@ -172,7 +171,6 @@ spotbugs-sast:
     SAST_ANALYZER_IMAGE_TAG: 5
     SAST_ANALYZER_IMAGE: "$SECURE_ANALYZERS_PREFIX/spotbugs:$SAST_ANALYZER_IMAGE_TAG"
   rules:
-    - !reference [.rules, rules]
     - if: $SAST_EXCLUDED_ANALYZERS =~ /spotbugs/
       when: never
     - if: $SAST_EXPERIMENTAL_FEATURES == 'true'
