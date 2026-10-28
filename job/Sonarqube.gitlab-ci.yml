@@ -8,7 +8,7 @@
     SONAR_IMAGE: $HARBOR_URL/$CHART_NORMAL_IMAGE
     SONAR_IMAGE_TAG: $CHART_NORMAL_TAG
     CHART_NORMAL_IMAGE: "dockerhub/sonarsource/sonar-scanner-cli"
-    CHART_NORMAL_TAG: "4.6"
+    CHART_NORMAL_TAG: "12.3"
     CHART_GRADLE_IMAGE: "dockerhub/library/gradle"
     CHART_GRADLE_TAG: "jdk11"
     CHART_MAVEN_IMAGE: "dockerhub/library/maven"
@@ -20,7 +20,10 @@
     PROJECT_NAME: "${CI_PROJECT_NAME}"
     GIT_BRANCH: "${CI_COMMIT_BRANCH}"
     GIT_COMMIT_ID: "${CI_COMMIT_SHORT_SHA}"
-  needs: ["Test--SonarQube source code scan:BlackWhite"]
+  needs:
+    - job: "Test--SonarQube source code scan:BlackWhite"
+    - job: "Test--Unit test"
+      optional: true
   cache:
     key: $CI_COMMIT_REF_SLUG
     paths:
@@ -30,10 +33,11 @@
   script:
     - ls -alh
     - cat sonar-project.properties
+    # 相容舊 SonarScan：pip 以非 root 安裝時，執行檔在 ~/.local/bin
+    - export PATH="$HOME/.local/bin:$PATH"
     - |
       if [ -f "iiidevops/sonarqube/SonarScan" ]; then
-        chmod +x ./iiidevops/sonarqube/SonarScan
-        ./iiidevops/sonarqube/SonarScan
+        bash ./iiidevops/sonarqube/SonarScan
       else
         /usr/bin/entrypoint.sh sonar-scanner
       fi
@@ -41,16 +45,42 @@
 Test--SonarQube source code scan:BlackWhite:
   stage: scan
   image:
-    name: $SONAR_IMAGE:$SONAR_IMAGE_TAG
+    name: ghcr.io/allen0099/blacklist:0.2.1
     entrypoint: [ "" ]
-  variables:
-    SONAR_IMAGE: $HARBOR_URL/dockerhub/iiiorg/sonarqube-runner
-    SONAR_IMAGE_TAG: git-2.40.1-dev
   before_script: []
   script:
+    # 掃描 job 以 uid 1000 執行，這裡產生的檔案要讓它能寫
+    - umask 0000
     - rm -rf .git
-    - /usr/bin/black_white_list.sh
-    - /usr/bin/setup.sh
+    # 黑白名單（gitignore 語法），優先序同舊版 black_white_list.sh；iiidevops/ 一律保留
+    - |
+      for f in iiidevops/sonarqube/app.whitelist iiidevops/sonarqube/app.blacklist iiidevops/app.whitelist iiidevops/app.blacklist; do
+        [ -f "$f" ] || continue
+        echo "use $f rule."
+        sed -E 's#^([[:space:]]*!?)\./#\1/#' "$f" > /tmp/rules
+        case "$f" in
+          *whitelist) set -- -E '*' -p /tmp/rules ;;
+          *)          set -- -e /tmp/rules ;;
+        esac
+        blacklist "$@" -P '/iiidevops/' . | LC_ALL=C sort > /tmp/keep
+        find . -type f | sed 's|^\./||' | LC_ALL=C sort > /tmp/all
+        LC_ALL=C comm -23 /tmp/all /tmp/keep | while IFS= read -r p; do rm -f "./$p"; done
+        find . -mindepth 1 -depth -type d -empty -delete
+        break
+      done
+    # 專案自訂設定（normal 類型）：路徑以 repo 根目錄為準；設 sonar.tests 時也要設 sonar.sources。
+    # 平台的值寫在後面，同 key 以後者為準，所以專案設了 projectKey/projectVersion 也不會生效
+    - |
+      : > sonar-project.properties
+      if [ -f iiidevops/sonarqube/sonar-project.properties ]; then
+        echo "use iiidevops/sonarqube/sonar-project.properties"
+        { cat iiidevops/sonarqube/sonar-project.properties; echo; } >> sonar-project.properties
+      fi
+      cat >> sonar-project.properties <<EOF
+      sonar.projectKey=$CI_PROJECT_NAME
+      sonar.projectVersion=$CI_COMMIT_BRANCH:$CI_COMMIT_SHORT_SHA
+      sonar.scm.disabled=true
+      EOF
   cache:
     key: $CI_COMMIT_REF_SLUG
     paths:
@@ -91,4 +121,35 @@ Test--SonarQube source code scan:
         SONAR_IMAGE_TAG: $CHART_MAVEN_TAG
       when: on_success
     - if: $CI_COMMIT_BRANCH =~ $III_SONARQUBE
+      when: on_success
+
+# 專案的 unit test 請另寫 job（例如 iiidevops/jobs/unit-test.yml），用該語言的映像跑測試、把報告存成 artifact，
+# SonarQube 掃描會自動取得（needs optional）；報告路徑寫在 iiidevops/sonarqube/sonar-project.properties，例如：
+#   Test--Unit test:
+#     extends: .unit-test-base
+#     image: $HARBOR_URL/dockerhub/library/python:3.12
+#     script:
+#       - cd app && pip install pytest pytest-cov -r requirements.txt
+#       - pytest --cov=. --cov-report=xml:coverage.xml
+#     artifacts:
+#       paths: [app/coverage.xml]
+#   iiidevops/sonarqube/sonar-project.properties（projectKey、projectVersion 由平台指定，不用寫）:
+#     sonar.sources=app
+#     sonar.tests=app/tests
+#     sonar.exclusions=app/tests/**,app/coverage.xml
+#     sonar.python.coverage.reportPaths=app/coverage.xml
+.unit-test-base:
+  stage: scan
+  before_script: []
+  artifacts:
+    when: always
+    expire_in: 1 day
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: never
+    - if: '$PLG_SONARQUBE == "false"'
+      when: never
+    - if: $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
+      when: never
+    - if: '$CI_COMMIT_BRANCH =~ $III_SONARQUBE'
       when: on_success
